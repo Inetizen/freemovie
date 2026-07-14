@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /vivaan-panel.html
 
-Sitemap: https://enchanting-naiad-11fdf3.netlify.app/sitemap.xml
+Sitemap: https://hotfakes.netlify.app/sitemap.xml
