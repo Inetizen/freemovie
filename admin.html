@@ -63,6 +63,9 @@
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-brand"><h1>▶ HotFake Admin</h1></div>
+    <!-- EMAIL KA NAYA BOX -->
+    <input class="inp" type="email" id="emailInput" placeholder="Admin Email dalein" style="margin-bottom: 0.8rem;">
+    <!-- PASSWORD BOX WAHI HAI -->
     <input class="inp" type="password" id="passInput" placeholder="Password dalein" onkeydown="if(event.key==='Enter') document.getElementById('loginBtn').click()">
     <button id="loginBtn" class="btn btn-red btn-full">🔑 Login</button>
   </div>
@@ -289,6 +292,8 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, set, update, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+  // NAYA: Firebase Auth ko laya gaya
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCTfvrtZuHXk3RW91Dcwpbghhq--D6X2s8",
@@ -299,21 +304,44 @@
   
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const auth = getAuth(app); // NAYA: Auth system chalu kiya
 
   let allVideosRaw = {};
 
+  // NAYA SECURE LOGIN
   document.getElementById('loginBtn').addEventListener('click', () => {
-    if(document.getElementById('passInput').value === 'vivaan2012004') {
-      sessionStorage.setItem('ad_ses', '1'); location.reload();
-    } else { alert('Galat Password'); }
-  });
-  if(sessionStorage.getItem('ad_ses') === '1') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminDash').style.display = 'flex';
-    initAdmin();
-  }
-  document.getElementById('logoutBtn').addEventListener('click', () => { sessionStorage.clear(); location.reload(); });
+    const email = document.getElementById('emailInput').value;
+    const pass = document.getElementById('passInput').value;
+    
+    if(!email || !pass) {
+        return alert("Kripya Email aur Password dono dalein!");
+    }
 
+    signInWithEmailAndPassword(auth, email, pass)
+      .catch((error) => {
+         alert('Galat Email ya Password: ' + error.message); 
+      });
+  });
+
+  // AUTO SESSION CHECKER
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminDash').style.display = 'flex';
+      initAdmin();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminDash').style.display = 'none';
+    }
+  });
+
+  // SECURE LOGOUT
+  document.getElementById('logoutBtn').addEventListener('click', () => { 
+      signOut(auth).then(() => { location.reload(); }); 
+  });
+
+
+  // YAHAN SE NICHE KA CODE PEHLE JAISA HI HAI (NO CHANGES)
   function initAdmin() {
       // Nav
       document.querySelectorAll('.slink[data-page]').forEach(link => {
@@ -608,4 +636,3 @@
 </script>
 </body>
 </html>
-
