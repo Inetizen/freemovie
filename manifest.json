@@ -1,7 +1,7 @@
 {
   "background_color": "#ffffff",
   "dir": "ltr",
-  "display": "standalone",
+ "display": "fullscreen",
   "name": "HOTFAKES",
   "orientation": "any",
   "scope": "/freemovie/",
