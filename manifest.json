@@ -1,13 +1,13 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "dir": "ltr",
- "display": "fullscreen",
+  "display": "fullscreen",
   "name": "HOTFAKES",
   "orientation": "any",
   "scope": "/freemovie/",
   "short_name": "HTF",
   "start_url": "/freemovie/index.html",
-  "theme_color": "#ffffff",
+  "theme_color": "#000000",
   "id": "hotfakes",
   "description": "Welcome to HOTFAKES - Watch free content",
   "icons": [
@@ -23,3 +23,4 @@
     }
   ]
 }
+
