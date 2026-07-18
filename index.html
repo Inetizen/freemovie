@@ -1,38 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Yeh aapki app ka character set aur screen ki setting hai -->
     <meta charset="UTF-8">
-    
-    <!-- Yeh line app ko screen par poora failayegi aur transparent (Edge-to-Edge) banayegi -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    
-    <!-- Yeh line upar battery/time wali patti ko Black karegi -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    
-    <!-- Aapki app ka Title -->
     <title>HotFake – Premium Video Collection</title>
     
-    <!-- Yeh aapki app ko PWA banati hai -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Agar aapki koi aur CSS file (style.css) hai, toh uska link yahan rahega -->
-</head>
-
-<body style="background-color: #07070F; color: white;">
-
-    <!-- 
-    ========================================================
-    AAPKE APP KA BAAKI DESIGN YAHAN AAYEGA 
-    (Jaise: HotFake Logo, Amazing Videos Collection, Search bar, aur Movies ki list)
-    ======================================================== 
-    -->
-    
-    <!-- Apni movies aur design ka code is jagah par (body ke andar) rakhein -->
-
-</body>
-</html>
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       :root { --bg: #07070F; --surf: #0F0F1C; --surf2: #181828; --red: #E63946; --red-glow: rgba(230,57,70,0.25); --text: #F0F0FF; --muted: #6E6E98; --border: rgba(255,255,255,0.07); --radius: 14px; --font: 'Poppins', sans-serif; --ease: 0.28s cubic-bezier(.4,0,.2,1); }
@@ -111,7 +85,7 @@
       .ep-thumb .ep-num { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.75); color:white; font-size:0.7rem; padding:2px 6px; border-radius:6px; font-weight:bold; backdrop-filter:blur(4px); border: 1px solid rgba(255,255,255,0.1); }
       .ep-title { padding:10px; font-size:0.8rem; color:white; font-weight:500; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font); }
 
-      /* --- HOTFAKE SECURE PLAYER OLD UI --- */
+      /* --- HOTFAKE SECURE PLAYER UI --- */
       #playerModal { display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; touch-action: none !important; }
       .player-wrapper { flex:1; display:flex; justify-content:center; align-items:center; width:100vw; height:100vh; position:relative; background: #000; overflow: hidden; touch-action: none !important;}
       #iframeContainer { width: 100%; height: 100%; position: relative; display: none; overflow: hidden; background: #000; touch-action: none !important; }
@@ -233,6 +207,8 @@
            </div>
            <div class="watermark-logo">HOTFAKE</div>
        </div>
+       <!-- ADDED: NATIVE PLAYER -->
+       <video id="nativePlayer" controls playsinline style="display:none; width:100%; height:100%; position:relative; z-index:2; background:#000;"></video>
        <iframe id="iframePlayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
     </div>
   </div>
@@ -624,8 +600,12 @@
       });
   }
 
+  // 👇 ADDED: CLOUDFLARE API URL 👇
+  const WORKER_URL = "https://shy-heart-bf9d.ekgf2003.workers.dev/?url=";
+
   class SecureVideoPlayer {
     constructor() { this.init(); this.uiTimer = null; this.shieldRestoreTimer = null; this.lastTap = 0; }
+    
     init() {
       this.modal = document.getElementById('playerModal');
       this.iframeContainer = document.getElementById('iframeContainer');
@@ -694,12 +674,58 @@
         }, 1000);
     }
 
-    playMainContent(url) {
-        this.adContainer.style.display = 'none'; this.iframeContainer.style.display = 'block';
+    // 👇 ADDED: CLOUDFLARE NATIVE PLAYER LOGIC 👇
+    async playMainContent(embedUrl) {
+        this.adContainer.style.display = 'none'; 
+        this.iframeContainer.style.display = 'block';
         if(this.adMediaContainer) this.adMediaContainer.innerHTML = '';
+
+        const nativePlayer = document.getElementById('nativePlayer');
+        const iframePlayer = document.getElementById('iframePlayer');
+
+        // Check for direct link
+        if (embedUrl.match(/\.(mp4|m3u8)$/i) || embedUrl.includes('.mp4?')) {
+            this.startNativePlayer(embedUrl, nativePlayer, iframePlayer);
+            return;
+        }
+
+        // Fetch via Cloudflare
+        try {
+            const response = await fetch(WORKER_URL + encodeURIComponent(embedUrl));
+            const data = await response.json();
+            
+            if (data.success && data.direct_url) {
+                this.startNativePlayer(data.direct_url, nativePlayer, iframePlayer);
+            } else {
+                this.startIframePlayer(embedUrl, iframePlayer, nativePlayer);
+            }
+        } catch (error) {
+            this.startIframePlayer(embedUrl, iframePlayer, nativePlayer);
+        }
+    }
+
+    startNativePlayer(url, nativePlayer, iframePlayer) {
+        iframePlayer.style.display = 'none';
+        this.smartOverlay.style.display = 'none';
+        this.touchCatcher.style.pointerEvents = 'none';
+        
+        nativePlayer.style.display = 'block';
+        nativePlayer.src = url;
+        nativePlayer.play().catch(e => console.log("Play needs interaction"));
+    }
+
+    startIframePlayer(url, iframePlayer, nativePlayer) {
+        nativePlayer.style.display = 'none';
+        nativePlayer.pause();
+        nativePlayer.src = '';
+        
+        iframePlayer.style.display = 'block';
+        this.smartOverlay.style.display = 'flex';
+        this.touchCatcher.style.pointerEvents = 'auto';
+        
         if (url.includes('hdhub4u')) { url = url + '&no-ads=true&hide-controls=true'; }
-        this.iframePlayer.src = url;
-        this.touchCatcher.style.pointerEvents = 'auto'; 
+        iframePlayer.src = url;
+
         this.smartOverlay.classList.add('active');
         clearTimeout(this.uiTimer);
         this.uiTimer = setTimeout(() => { this.smartOverlay.classList.remove('active'); }, 3500);
@@ -707,9 +733,19 @@
 
     close() {
       this.modal.style.display = 'none'; document.body.style.overflow = ''; document.body.style.touchAction = '';
-      this.iframePlayer.src = ''; clearInterval(this.adInterval);
+      
+      this.iframePlayer.src = ''; 
+      
+      const nativePlayer = document.getElementById('nativePlayer');
+      if(nativePlayer) {
+          nativePlayer.pause();
+          nativePlayer.src = '';
+      }
+
+      clearInterval(this.adInterval);
       this.smartOverlay.classList.remove('active');
       clearTimeout(this.uiTimer); clearTimeout(this.shieldRestoreTimer);
+      
       if(this.sessionStartTime && this.currentVidId) {
           let duration = Math.floor((Date.now() - this.sessionStartTime) / 1000);
           logAction(`Closed Player: ${this.currentTitle} (Watched ${duration}s)`);
@@ -736,3 +772,4 @@
 
 </body>
 </html>
+
