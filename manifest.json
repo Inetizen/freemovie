@@ -6,7 +6,7 @@
   "orientation": "any",
   "scope": "/freemovie/",
   "short_name": "HTF",
-  "start_url": "/freemovie/",
+  "start_url": "/freemovie/index.html",
   "theme_color": "#ffffff",
   "id": "hotfakes",
   "description": "Welcome to HOTFAKES - Watch free content",
