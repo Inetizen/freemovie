@@ -8,6 +8,18 @@
   "short_name": "HTF",
   "start_url": "/",
   "theme_color": "#ffffff",
-  "id": "hotfakes ",
-  "description": "Welcome to HOTFAKES - Watch free content"
+  "id": "hotfakes",
+  "description": "Welcome to HOTFAKES - Watch free content",
+  "icons": [
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
