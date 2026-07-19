@@ -61,7 +61,7 @@
     <script>
         const WORKER_URL = "https://shy-heart-bf9d.ekgf2003.workers.dev/?url=";
 
-        // 1. Grid Load Karne Ka Function (Local storage se movies nikal kar dikhata hai)
+        // 1. Grid Load Karne Ka Function 
         function loadDownloads() {
             const downloadsGrid = document.getElementById('downloadsGrid');
             const offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
@@ -72,11 +72,9 @@
             }
             downloadsGrid.innerHTML = '';
             
-            // Har download ki hui movie ke liye ek card banayein
             offlineMovies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                // Agar thumbnail nahi hai toh placeholder image dikhayein
                 card.innerHTML = `
                     <img src="${movie.thumb || 'https://via.placeholder.com/300x169/181828/6E6E98?text=Offline'}" alt="Thumb"> 
                     <div class="card-body">
@@ -91,12 +89,12 @@
             });
         }
 
-        // 2. Play Offline Video (Video chalane ke liye wapas index.html par bhejta hai)
+        // 2. Play Offline Video 
         function playOffline(videoUrl) {
             window.location.href = `index.html?offline_play=${encodeURIComponent(videoUrl)}`;
         }
 
-        // 3. Delete Logic (Cache aur Storage khali karta hai)
+        // 3. Delete Logic
         async function deleteDownload(movieId, videoUrl) {
             if(confirm("Remove this video from downloads?")) {
                 try {
@@ -112,14 +110,13 @@
             }
         }
 
-        // 4. Background Fetch & Progress Bar Logic (Sabse important)
+        // 4. Background Fetch & Progress Bar Logic (UPDATED WITH ADVANCED ERROR TRACKING)
         async function processPendingDownload() {
-            // Check karega ki index.html se koi command aayi hai kya download ke liye
             const pending = localStorage.getItem('pending_download');
-            if (!pending) return; // Agar nahi aayi toh ruk jao
+            if (!pending) return; 
             
             const movie = JSON.parse(pending);
-            localStorage.removeItem('pending_download'); // Command ko hata do taaki dubara reload pe na chale
+            localStorage.removeItem('pending_download'); 
             
             const uiSection = document.getElementById('activeDownloadSection');
             const uiTitle = document.getElementById('dlTitle');
@@ -127,10 +124,11 @@
             const uiProgress = document.getElementById('dlProgress');
             const uiPercent = document.getElementById('dlPercent');
 
-            // UI on karo (Progress bar dikhao)
+            // UI on karo 
             uiSection.style.display = 'block';
             uiTitle.innerText = movie.title;
             uiStatus.innerText = "Extracting video link...";
+            uiStatus.style.color = "rgba(255,255,255,0.6)"; // Reset color incase of previous error
             
             try {
                 // Step A: Worker se final MP4 link laao
@@ -138,23 +136,25 @@
                 const data = await res.json();
                 const directUrl = (data.direct_urls && data.direct_urls.length > 0) ? data.direct_urls[0] : data.direct_url;
                 
-                if(!directUrl) throw new Error("Link extract failed");
+                if(!directUrl) throw new Error("Link extract failed (Worker Error)");
                 uiStatus.innerText = "Downloading safely...";
 
                 // Step B: Direct URL se video fetch karo Cache ke liye
                 const videoRes = await fetch(directUrl);
-                const cache = await caches.open('hotfake-cache-v2');
                 
-                // Security ki wajah se size hamesha nahi milta, usko handle kar rahe hain
+                // HINGLISH: Yahan hum check kar rahe hain ki server ne file dene se mana toh nahi kiya (CORS ya 403 Forbidden Error)
+                if (!videoRes.ok) {
+                    throw new Error(`Server Blocked (Status: ${videoRes.status})`);
+                }
+
+                const cache = await caches.open('hotfake-cache-v2');
                 const contentLength = videoRes.headers.get('content-length');
                 
                 if (!contentLength || !videoRes.body) {
-                    // Agar file size nahi pata, toh percentage ke bina direct save karo
                     uiProgress.style.width = '100%';
                     uiPercent.innerText = "Saving...";
                     await cache.put(directUrl, videoRes.clone());
                 } else {
-                    // Agar size pata chal gaya toh asli progress bar percentage chalega
                     const total = parseInt(contentLength, 10);
                     let loaded = 0;
                     const reader = videoRes.body.getReader();
@@ -178,27 +178,27 @@
                     await cache.put(directUrl, newResponse);
                 }
                 
-                // Step C: File save hone ke baad Database (local storage) me detail update karo
+                // Step C: File save hone ke baad Database me detail update karo
                 let offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
                 offlineMovies = offlineMovies.filter(m => m.id !== movie.id);
                 offlineMovies.push({ id: movie.id, title: movie.title, url: directUrl, thumb: movie.thumb });
                 localStorage.setItem('my_downloads', JSON.stringify(offlineMovies));
                 
-                // Download pura hua! UI band karo aur nayi list update karke dikhao
                 uiSection.style.display = 'none';
                 loadDownloads();
                 
             } catch(e) {
-                console.error("Failed", e);
-                uiStatus.innerText = "Download failed. Please try again.";
-                uiStatus.style.color = "#E63946";
-                setTimeout(() => { uiSection.style.display = 'none'; }, 3000); // 3 second baad error hata do
+                // HINGLISH: Agar fail hoga toh yahan exact error text me print hoga screen par
+                console.error("Download Error Details:", e);
+                uiStatus.innerText = "Error: " + e.message;
+                uiStatus.style.color = "#E63946"; 
+                // Error screen pe dikhta rahega taaki aap padh sako (wo turant gayab nahi hoga)
             }
         }
 
-        // Jab page load ho tab ye dono functions call karo
         loadDownloads();
         processPendingDownload();
     </script>
 </body>
 </html>
+
