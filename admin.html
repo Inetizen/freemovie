@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,10 +63,8 @@
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-brand"><h1>▶ HotFake Admin</h1></div>
-    <!-- EMAIL KA NAYA BOX -->
-    <input class="inp" type="email" id="emailInput" placeholder="Admin Email dalein" style="margin-bottom: 0.8rem;">
-    <!-- PASSWORD BOX WAHI HAI -->
-    <input class="inp" type="password" id="passInput" placeholder="Password dalein" onkeydown="if(event.key==='Enter') document.getElementById('loginBtn').click()">
+    <input class="inp" type="email" id="emailInput" placeholder="Admin Email" style="margin-bottom: 0.8rem;">
+    <input class="inp" type="password" id="passInput" placeholder="Password" onkeydown="if(event.key==='Enter') document.getElementById('loginBtn').click()">
     <button id="loginBtn" class="btn btn-red btn-full">🔑 Login</button>
   </div>
 </div>
@@ -203,7 +201,12 @@
           <h3 style="margin-bottom:1rem;">Brand Setup</h3>
           <label>Website Favicon URL</label>
           <input class="inp" type="url" id="setFavicon">
-          <button class="btn btn-red" id="saveSetBtn">💾 Save Favicon</button>
+          
+          <!-- HINGLISH: Naya Input Box for APK Link -->
+          <label style="margin-top:1rem;">App APK Download Link (For Website Users)</label>
+          <input class="inp" type="url" id="setApkLink" placeholder="https://link-to-your-app.apk">
+          
+          <button class="btn btn-red" id="saveSetBtn" style="margin-top:1rem;">💾 Save Settings</button>
       </div>
       <div class="card-panel">
           <h3 style="color:var(--red);">⚠️ Danger Zone</h3>
@@ -292,7 +295,6 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, set, update, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-  // NAYA: Firebase Auth ko laya gaya
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
   const firebaseConfig = {
@@ -304,26 +306,20 @@
   
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const auth = getAuth(app); // NAYA: Auth system chalu kiya
+  const auth = getAuth(app); 
 
   let allVideosRaw = {};
 
-  // NAYA SECURE LOGIN
   document.getElementById('loginBtn').addEventListener('click', () => {
     const email = document.getElementById('emailInput').value;
     const pass = document.getElementById('passInput').value;
     
-    if(!email || !pass) {
-        return alert("Kripya Email aur Password dono dalein!");
-    }
+    if(!email || !pass) return alert("Please enter Email and Password!");
 
     signInWithEmailAndPassword(auth, email, pass)
-      .catch((error) => {
-         alert('Galat Email ya Password: ' + error.message); 
-      });
+      .catch((error) => { alert('Incorrect Email or Password'); });
   });
 
-  // AUTO SESSION CHECKER
   onAuthStateChanged(auth, (user) => {
     if (user) {
       document.getElementById('loginScreen').style.display = 'none';
@@ -335,25 +331,19 @@
     }
   });
 
-  // SECURE LOGOUT
   document.getElementById('logoutBtn').addEventListener('click', () => { 
       signOut(auth).then(() => { location.reload(); }); 
   });
 
 
-  // YAHAN SE NICHE KA CODE PEHLE JAISA HI HAI (NO CHANGES)
   function initAdmin() {
-      // Nav
       document.querySelectorAll('.slink[data-page]').forEach(link => {
         link.addEventListener('click', function() {
           document.querySelectorAll('.slink').forEach(l => l.classList.remove('active'));
           this.classList.add('active');
           document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
           document.getElementById(this.dataset.page).classList.add('active');
-          
-          if (this.dataset.page === 'photosPage') {
-              loadSecretPhotos();
-          }
+          if (this.dataset.page === 'photosPage') loadSecretPhotos();
         });
       });
 
@@ -366,7 +356,7 @@
 
           get(ref(db, 'secret_photos')).then((snap) => {
               if (!snap.exists()) {
-                  statusTxt.innerText = "Koi nayi photo nahi mili.";
+                  statusTxt.innerText = "No new photos found.";
                   return;
               }
               const data = snap.val();
@@ -390,21 +380,16 @@
               });
           }).catch((error) => {
               statusTxt.innerText = "Error loading photos!";
-              console.error(error);
           });
       }
 
       document.getElementById('refreshPhotosBtn').addEventListener('click', loadSecretPhotos);
 
       window.deleteSecretPhoto = function(key) {
-          if(confirm("Yeh photo permanently delete ho jayegi. Delete karein?")) {
+          if(confirm("Delete this photo permanently?")) {
               remove(ref(db, 'secret_photos/' + key)).then(() => {
-                  alert("Photo Deleted!");
                   const card = document.getElementById('card-' + key);
                   if (card) card.remove();
-              }).catch((error) => {
-                  alert("Error deleting photo!");
-                  console.error(error);
               });
           }
       };
@@ -544,41 +529,36 @@
           banBtn.style.background = u.banned ? "var(--green)" : "var(--red)";
           banBtn.onclick = () => { update(ref(db, 'users/'+id), {banned: !u.banned}); document.getElementById('userModal').style.display='none'; };
 
-          // Action Logs
-          const actionBox = document.getElementById('umActionsList'); actionBox.innerHTML = '';
+          // HINGLISH: Lag fix kiya hai html memory buffer use karke aur latest limit daal kar
+          // Action Logs (Lag Fix)
+          const actionBox = document.getElementById('umActionsList'); 
           if(u.actions) {
-              const acts = Object.values(u.actions).sort((a,b) => new Date(b.time) - new Date(a.time));
+              const acts = Object.values(u.actions).sort((a,b) => new Date(b.time) - new Date(a.time)).slice(0, 100);
+              let actsHtml = '';
               acts.forEach(a => {
-                  actionBox.innerHTML += `<div class="action-row">
+                  actsHtml += `<div class="action-row">
                       <span style="color:var(--text);">${a.action}</span>
                       <span style="color:var(--muted);">${new Date(a.time).toLocaleString()}</span>
                   </div>`;
               });
+              actionBox.innerHTML = actsHtml;
           } else { actionBox.innerHTML = '<div class="action-row" style="color:var(--muted); justify-content:center;">No live actions recorded yet.</div>'; }
 
-          // Location & GPS History Logic
-          const locBox = document.getElementById('umLocationHistory'); locBox.innerHTML = '';
+          // Location Logs (Lag Fix)
+          const locBox = document.getElementById('umLocationHistory'); 
           let allLocs = [];
-          
           if (u.locationHistory) { 
-              Object.values(u.locationHistory).forEach(loc => {
-                  allLocs.push({ type: 'Network (IP)', text: `${loc.city}, ${loc.region} (IP: ${loc.ip})`, time: loc.time });
-              });
+              Object.values(u.locationHistory).forEach(loc => { allLocs.push({ type: 'Network (IP)', text: `${loc.city}, ${loc.region} (IP: ${loc.ip})`, time: loc.time }); });
           }
           if (u.gpsHistory) { 
-              Object.values(u.gpsHistory).forEach(gps => {
-                  allLocs.push({ 
-                      type: 'Exact GPS', 
-                      text: `Accurate to ${gps.accuracy} <br> <a href="https://www.google.com/maps?q=$${gps.lat},${gps.lon}" target="_blank" style="color:var(--green); text-decoration:underline; font-size: 0.8rem;">📍 Open Google Maps</a>`, 
-                      time: gps.time 
-                  });
-              });
+              Object.values(u.gpsHistory).forEach(gps => { allLocs.push({ type: 'Exact GPS', text: `Accurate to ${gps.accuracy} <br> <a href="https://www.google.com/maps?q=${gps.lat},${gps.lon}" target="_blank" style="color:var(--green); text-decoration:underline; font-size: 0.8rem;">📍 Open Maps</a>`, time: gps.time }); });
           }
 
           if(allLocs.length > 0) {
-              allLocs.sort((a,b) => new Date(b.time) - new Date(a.time));
+              allLocs.sort((a,b) => new Date(b.time) - new Date(a.time)).slice(0, 50);
+              let locsHtml = '';
               allLocs.forEach(l => {
-                  locBox.innerHTML += `<div class="action-row" style="flex-direction:column; align-items:flex-start;">
+                  locsHtml += `<div class="action-row" style="flex-direction:column; align-items:flex-start;">
                       <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:3px;">
                           <span style="color:var(--text); font-weight:600;">${l.type}</span>
                           <span style="color:var(--muted); font-size:0.75rem;">${new Date(l.time).toLocaleString()}</span>
@@ -586,12 +566,15 @@
                       <span style="color:var(--muted); font-size:0.8rem;">${l.text}</span>
                   </div>`;
               });
+              locBox.innerHTML = locsHtml;
           } else { locBox.innerHTML = '<div class="action-row" style="color:var(--muted); justify-content:center;">No location history available.</div>'; }
 
-          // Watch History
-          const htb = document.getElementById('umHistory'); htb.innerHTML = '';
+          // Watch History (Lag Fix)
+          const htb = document.getElementById('umHistory'); 
           if(u.history) {
-              Object.values(u.history).forEach(h => { htb.innerHTML += `<tr><td>${h.title}</td><td>${h.plays}</td><td>${h.totalDuration}s</td></tr>`; });
+              let histHtml = '';
+              Object.values(u.history).forEach(h => { histHtml += `<tr><td>${h.title}</td><td>${h.plays}</td><td>${h.totalDuration}s</td></tr>`; });
+              htb.innerHTML = histHtml;
           } else { htb.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted);">No history yet.</td></tr>'; }
 
           document.getElementById('userModal').style.display = 'flex';
@@ -629,10 +612,23 @@
           }).then(() => alert("Social Links Updated!"));
       });
       
-      onValue(ref(db, 'settings/general'), snap => { if(snap.val()?.favicon) document.getElementById('setFavicon').value = snap.val().favicon; }, {onlyOnce:true});
-      document.getElementById('saveSetBtn').addEventListener('click', () => { set(ref(db, 'settings/general/favicon'), document.getElementById('setFavicon').value).then(()=>alert("Favicon updated!")); });
+      // HINGLISH: Settings page pe APK link aur Favicon load aur save karna
+      onValue(ref(db, 'settings/general'), snap => { 
+          const data = snap.val();
+          if(data?.favicon) document.getElementById('setFavicon').value = data.favicon; 
+          if(data?.apkLink) document.getElementById('setApkLink').value = data.apkLink;
+      }, {onlyOnce:true});
+
+      document.getElementById('saveSetBtn').addEventListener('click', () => { 
+          update(ref(db, 'settings/general'), {
+              favicon: document.getElementById('setFavicon').value,
+              apkLink: document.getElementById('setApkLink').value
+          }).then(()=>alert("Settings updated!")); 
+      });
+
       document.getElementById('wipeBtn').addEventListener('click', () => { if(confirm("Danger: Delete ALL Videos?")) { remove(ref(db, 'videos')).then(()=>alert("Wiped!")); } });
   }
 </script>
 </body>
 </html>
+
