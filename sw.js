@@ -1,31 +1,36 @@
-const CACHE_NAME = 'hotfake-cache-v2'; // Jab bhi website me bada change karein, iska version badha dein (v3, v4...)
+const CACHE_NAME = 'hotfake-cache-v2'; // Jab bhi major update ho, ise v3 karein
 
+// Nayi files add kar di gayi hain
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/downloads.html', 
+  '/100.png',
+  '/LargeTile.scale-100.png',
+  '/manifest.json'
 ];
 
-// 1. Install Event (Files ko offline save karne ke liye)
+// 1. Install Event
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Naya Service Worker turant active ho jaye
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Site files saved for offline!');
+        console.log('Essential files cached!');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// 2. Activate Event (Purane useless cache ko delete karne ke liye - YE MISSING THA)
+// 2. Activate Event (Purane cache delete karne ke liye)
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cache => {
           if (cache !== CACHE_NAME) {
-            console.log('Purana cache delete kiya gaya:', cache);
-            return caches.delete(cache); // Delete old versions
+            console.log('Deleting old cache:', cache);
+            return caches.delete(cache);
           }
         })
       );
@@ -33,17 +38,19 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 3. Fetch Event (Network-First Strategy - TAKI UPDATES HAMESHA MILEIN)
+// 3. Fetch Event
 self.addEventListener('fetch', event => {
-  // Firebase aur external API requests ko ignore karein taaki wo direct internet se chalein
-  if (event.request.url.includes('firebaseio.com') || event.request.url.includes('ipapi.co')) {
+  // Firebase, API, aur Ad network ko ignore karein
+  if (event.request.url.includes('firebaseio.com') || 
+      event.request.url.includes('ipapi.co') ||
+      event.request.url.includes('google-analytics')) {
      return;
   }
 
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Agar internet chal raha hai, toh latest file server se lo aur cache ko bhi update kar do
+        // Agar net chal raha hai, toh latest file cache mein update karo
         if (response && response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
@@ -53,7 +60,7 @@ self.addEventListener('fetch', event => {
         return response;
       })
       .catch(() => {
-        // Agar user OFFILNE hai (internet nahi hai), tabhi Cache se file load karo
+        // Agar OFFLINE hain, toh Cache mein check karo
         return caches.match(event.request);
       })
   );
