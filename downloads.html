@@ -2,62 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Downloads - Offline</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Downloads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Premium Dark Theme UI */
-        body { background: #0f0f0f; color: #fff; font-family: 'Arial', sans-serif; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .back-btn { color: white; text-decoration: none; font-size: 18px; background: #333; padding: 8px 15px; border-radius: 5px; }
+        body { background: #07070F; color: #F0F0FF; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 15px; }
+        .header h2 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+        .back-btn { color: white; text-decoration: none; font-size: 0.9rem; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; font-weight: 500; }
         
+        /* Downloading Card UI (Progress bar ke liye) */
+        .downloading-card { background: rgba(230, 57, 70, 0.1); border: 1px solid rgba(230, 57, 70, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 25px; }
+        .dl-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .dl-info h3 { margin: 0; font-size: 1rem; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #E63946; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .progress-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { height: 100%; width: 0%; background: #E63946; border-radius: 10px; transition: width 0.3s ease; }
+        .status-text { margin: 0; font-size: 0.8rem; color: rgba(255,255,255,0.6); display: flex; justify-content: space-between; }
+
+        /* Offline Grid UI (Download hui movies ke liye) */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .card { background: #1a1a1a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .card-body { padding: 10px; text-align: center; }
-        .card-body h3 { font-size: 14px; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
+        .card { background: #181828; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.07); }
+        .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .card-body { padding: 10px; }
+        .card-body h3 { font-size: 0.85rem; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
         .btn-group { display: flex; gap: 5px; }
-        .btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.75rem; font-family: 'Poppins', sans-serif;}
         .btn-play { background: #E63946; color: white; }
-        .btn-del { background: #444; color: white; }
-        .empty-msg { text-align: center; color: #888; margin-top: 50px; font-size: 18px; }
+        .btn-del { background: rgba(255,255,255,0.1); color: white; }
+        .empty-msg { text-align: center; color: rgba(255,255,255,0.5); margin-top: 50px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2>📥 My Downloads</h2>
-        <a href="index.html" class="back-btn">⬅ Back to Home</a>
+        <h2>Downloads</h2>
+        <a href="index.html" class="back-btn">⬅ Back</a>
+    </div>
+
+    <!-- Yahan active download ka progress bar dikhega -->
+    <div id="activeDownloadSection" class="downloading-card" style="display:none;">
+        <div class="dl-info">
+            <span class="spinner"></span>
+            <h3 id="dlTitle">Preparing...</h3>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="dlProgress"></div>
+        </div>
+        <p class="status-text"><span id="dlStatusText">Connecting to server...</span> <span id="dlPercent">0%</span></p>
     </div>
 
     <!-- Yahan saari downloaded movies dikhengi -->
     <div id="downloadsGrid" class="grid"></div>
 
     <script>
-        // 1. LocalStorage se downloaded movies nikalo
+        const WORKER_URL = "https://shy-heart-bf9d.ekgf2003.workers.dev/?url=";
+
+        // 1. Grid Load Karne Ka Function (Local storage se movies nikal kar dikhata hai)
         function loadDownloads() {
             const downloadsGrid = document.getElementById('downloadsGrid');
             const offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
 
             if (offlineMovies.length === 0) {
-                downloadsGrid.innerHTML = "<div class='empty-msg'>Koi video download nahi ki gayi hai. 😢</div>";
+                downloadsGrid.innerHTML = "<div class='empty-msg'>No downloaded videos available.</div>";
                 return;
             }
-
             downloadsGrid.innerHTML = '';
             
-            // Har movie ke liye ek card banao
+            // Har download ki hui movie ke liye ek card banayein
             offlineMovies.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'card';
+                // Agar thumbnail nahi hai toh placeholder image dikhayein
                 card.innerHTML = `
-                    <!-- Thumbnail placeholder -->
-                    <img src="100.png" alt="${movie.title}"> 
+                    <img src="${movie.thumb || 'https://via.placeholder.com/300x169/181828/6E6E98?text=Offline'}" alt="Thumb"> 
                     <div class="card-body">
                         <h3>${movie.title}</h3>
                         <div class="btn-group">
                             <button class="btn btn-play" onclick="playOffline('${movie.url}')">▶ Play</button>
-                            <button class="btn btn-del" onclick="deleteDownload('${movie.id}', '${movie.url}')">🗑️ Delete</button>
+                            <button class="btn btn-del" onclick="deleteDownload('${movie.id}', '${movie.url}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -65,34 +91,114 @@
             });
         }
 
-        // 2. Play Button Logic (Video ko Cache se nikalkar chalana)
-        async function playOffline(videoUrl) {
-            // Yahan hum index.html par waapas bhej rahe hain offline URL ke sath
-            // Taaki user ko wahi premium player mile jo humne banaya hai
+        // 2. Play Offline Video (Video chalane ke liye wapas index.html par bhejta hai)
+        function playOffline(videoUrl) {
             window.location.href = `index.html?offline_play=${encodeURIComponent(videoUrl)}`;
         }
 
-        // 3. Delete Logic (Cache aur Storage khali karna)
+        // 3. Delete Logic (Cache aur Storage khali karta hai)
         async function deleteDownload(movieId, videoUrl) {
-            if(confirm("Kya aap is video ko delete karna chahte hain?")) {
+            if(confirm("Remove this video from downloads?")) {
                 try {
-                    const cache = await caches.open('hotfake-downloads-v1');
-                    await cache.delete(videoUrl); // Cache se hataya
+                    const cache = await caches.open('hotfake-cache-v2');
+                    await cache.delete(videoUrl); 
                     
                     let offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
                     offlineMovies = offlineMovies.filter(m => m.id !== movieId);
-                    localStorage.setItem('my_downloads', JSON.stringify(offlineMovies)); // DB se hataya
+                    localStorage.setItem('my_downloads', JSON.stringify(offlineMovies));
                     
-                    loadDownloads(); // Screen refresh ki
-                } catch (err) {
-                    console.error("Delete failed", err);
-                }
+                    loadDownloads(); 
+                } catch (err) { console.error(err); }
             }
         }
 
-        // Page load hote hi list load karo
+        // 4. Background Fetch & Progress Bar Logic (Sabse important)
+        async function processPendingDownload() {
+            // Check karega ki index.html se koi command aayi hai kya download ke liye
+            const pending = localStorage.getItem('pending_download');
+            if (!pending) return; // Agar nahi aayi toh ruk jao
+            
+            const movie = JSON.parse(pending);
+            localStorage.removeItem('pending_download'); // Command ko hata do taaki dubara reload pe na chale
+            
+            const uiSection = document.getElementById('activeDownloadSection');
+            const uiTitle = document.getElementById('dlTitle');
+            const uiStatus = document.getElementById('dlStatusText');
+            const uiProgress = document.getElementById('dlProgress');
+            const uiPercent = document.getElementById('dlPercent');
+
+            // UI on karo (Progress bar dikhao)
+            uiSection.style.display = 'block';
+            uiTitle.innerText = movie.title;
+            uiStatus.innerText = "Extracting video link...";
+            
+            try {
+                // Step A: Worker se final MP4 link laao
+                const res = await fetch(WORKER_URL + encodeURIComponent(movie.url));
+                const data = await res.json();
+                const directUrl = (data.direct_urls && data.direct_urls.length > 0) ? data.direct_urls[0] : data.direct_url;
+                
+                if(!directUrl) throw new Error("Link extract failed");
+                uiStatus.innerText = "Downloading safely...";
+
+                // Step B: Direct URL se video fetch karo Cache ke liye
+                const videoRes = await fetch(directUrl);
+                const cache = await caches.open('hotfake-cache-v2');
+                
+                // Security ki wajah se size hamesha nahi milta, usko handle kar rahe hain
+                const contentLength = videoRes.headers.get('content-length');
+                
+                if (!contentLength || !videoRes.body) {
+                    // Agar file size nahi pata, toh percentage ke bina direct save karo
+                    uiProgress.style.width = '100%';
+                    uiPercent.innerText = "Saving...";
+                    await cache.put(directUrl, videoRes.clone());
+                } else {
+                    // Agar size pata chal gaya toh asli progress bar percentage chalega
+                    const total = parseInt(contentLength, 10);
+                    let loaded = 0;
+                    const reader = videoRes.body.getReader();
+                    
+                    const stream = new ReadableStream({
+                        async start(controller) {
+                            while (true) {
+                                const {done, value} = await reader.read();
+                                if (done) break;
+                                loaded += value.length;
+                                const percent = Math.round((loaded/total)*100);
+                                uiProgress.style.width = percent + '%';
+                                uiPercent.innerText = percent + '%';
+                                controller.enqueue(value);
+                            }
+                            controller.close();
+                        }
+                    });
+                    
+                    const newResponse = new Response(stream, { headers: videoRes.headers });
+                    await cache.put(directUrl, newResponse);
+                }
+                
+                // Step C: File save hone ke baad Database (local storage) me detail update karo
+                let offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
+                offlineMovies = offlineMovies.filter(m => m.id !== movie.id);
+                offlineMovies.push({ id: movie.id, title: movie.title, url: directUrl, thumb: movie.thumb });
+                localStorage.setItem('my_downloads', JSON.stringify(offlineMovies));
+                
+                // Download pura hua! UI band karo aur nayi list update karke dikhao
+                uiSection.style.display = 'none';
+                loadDownloads();
+                
+            } catch(e) {
+                console.error("Failed", e);
+                uiStatus.innerText = "Download failed. Please try again.";
+                uiStatus.style.color = "#E63946";
+                setTimeout(() => { uiSection.style.display = 'none'; }, 3000); // 3 second baad error hata do
+            }
+        }
+
+        // Jab page load ho tab ye dono functions call karo
         loadDownloads();
+        processPendingDownload();
     </script>
 </body>
 </html>
-
