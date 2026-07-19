@@ -518,17 +518,22 @@
       const catBadge = isEmbed ? '<span class="cat-badge movie">🎬 Movie</span>' : '<span class="cat-badge link">🔗 Link</span>';
       const partsJson = v.parts ? encodeURIComponent(JSON.stringify(v.parts)) : '';
 
+      // YAHAN PAR SMART DOWNLOAD BUTTON WALA NAYA CODE HAI
       htmlCode += `
-        <a class="card vid-card" data-id="${v.id}" data-url="${v.videoUrl}" data-title="${esc(v.title)}" data-embed="${isEmbed}" data-parts="${partsJson}">
-          <div class="card-thumb">
-            <img src="${v.imageUrl}" loading="lazy" onerror="this.style.display='none'">
-            ${catBadge}
-            <div class="play-overlay"><div class="play-circle"><div class="play-triangle"></div></div></div>
-          </div>
-          <div style="padding: 10px;">
-              <h4 style="font-size:0.9rem; color:#fff; font-weight:500;">${esc(v.title)}</h4>
-          </div>
-        </a>`;
+        <div class="card-wrapper" style="position:relative; margin-bottom:10px;">
+            <a class="card vid-card" data-id="${v.id}" data-url="${v.videoUrl}" data-title="${esc(v.title)}" data-embed="${isEmbed}" data-parts="${partsJson}">
+              <div class="card-thumb">
+                <img src="${v.imageUrl}" loading="lazy" onerror="this.style.display='none'">
+                ${catBadge}
+                <div class="play-overlay"><div class="play-circle"><div class="play-triangle"></div></div></div>
+              </div>
+              <div style="padding: 10px;">
+                  <h4 style="font-size:0.9rem; color:#fff; font-weight:500;">${esc(v.title)}</h4>
+              </div>
+            </a>
+            <!-- NEW SMART DOWNLOAD BUTTON -->
+            ${isEmbed ? `<button id="dlBtn_${v.id}" class="btn-download-smart" onclick="startMovieDownload('${v.id}', '${esc(v.title)}', '${v.videoUrl}', '${v.imageUrl}')" style="position:absolute; bottom:10px; right:10px; z-index:5; background:var(--red); color:white; border:none; border-radius:5px; padding:4px 10px; font-size:0.75rem; font-weight:600; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.5);">⬇ Download</button>` : ''}
+        </div>`;
     });
     gallery.innerHTML = htmlCode;
 
@@ -553,7 +558,12 @@
                 showEpisodes(title, parts, vidId); return; 
             }
         }
-        player.open(mainUrl, title, vidId);
+        
+        // YAHAN PAR SMART PLAY CHECK FUNCTION CONNECT KIYA GAYA HAI
+        smartPlayCheck(vidId, title, mainUrl, this.dataset.thumb || '').then(playedOffline => {
+             // Agar offline nahi mila, toh online chalao
+             if(!playedOffline) { player.open(mainUrl, title, vidId); }
+        });
       });
     });
   }
@@ -604,6 +614,74 @@
 
   // 👇 ADDED: CLOUDFLARE API URL 👇
   const WORKER_URL = "https://shy-heart-bf9d.ekgf2003.workers.dev/?url=";
+
+  // ==========================================
+  // SMART PLAY & DOWNLOAD SYSTEM (Netflix Style)
+  // ==========================================
+  window.smartPlayCheck = async function(vidId, title, url, thumb) {
+      const offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
+      const downloadedMovie = offlineMovies.find(m => m.id === vidId);
+
+      if (downloadedMovie) {
+          console.log("Playing Offline Version from Cache!");
+          try {
+              const cache = await caches.open('hotfake-cache-v2');
+              const cachedResponse = await cache.match(downloadedMovie.url);
+              
+              if (cachedResponse) {
+                  const videoBlob = await cachedResponse.blob();
+                  const localVideoUrl = URL.createObjectURL(videoBlob);
+                  player.open(localVideoUrl, title, vidId);
+                  return true; 
+              }
+          } catch(e) {
+              console.error("Offline Cache play failed, falling back to online", e);
+          }
+      }
+      return false;
+  };
+
+  window.startMovieDownload = async function(id, title, url, thumb) {
+      const btn = document.getElementById(`dlBtn_${id}`);
+      const originalText = btn.innerHTML;
+      
+      btn.innerHTML = `⏳...`;
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+
+      try {
+          console.log(`Getting Cloudflare Link for Download: ${title}`);
+          const response = await fetch(WORKER_URL + encodeURIComponent(url));
+          const data = await response.json();
+          const directUrl = (data.direct_urls && data.direct_urls.length > 0) ? data.direct_urls[0] : data.direct_url;
+
+          if (directUrl) {
+              console.log("Saving file to offline cache...");
+              const cache = await caches.open('hotfake-cache-v2');
+              const videoResponse = await fetch(directUrl);
+              
+              if (!videoResponse.ok) throw new Error("Video fetch failed");
+              
+              await cache.put(directUrl, videoResponse.clone());
+
+              let offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
+              offlineMovies = offlineMovies.filter(m => m.id !== id);
+              offlineMovies.push({ id, title, url: directUrl, thumb });
+              localStorage.setItem('my_downloads', JSON.stringify(offlineMovies));
+
+              btn.innerHTML = `✅ Saved`;
+              btn.style.background = '#2DC653'; 
+              alert(`${title} downloaded successfully!`);
+          } else {
+              throw new Error("Worker extraction failed");
+          }
+      } catch (error) {
+          console.error("Download Error:", error);
+          btn.innerHTML = `❌ Retry`;
+          btn.disabled = false;
+          btn.style.opacity = '1';
+      }
+  };
 
   class SecureVideoPlayer {
     constructor() { this.init(); this.uiTimer = null; this.shieldRestoreTimer = null; this.lastTap = 0; }
@@ -676,7 +754,6 @@
         }, 1000);
     }
 
-    // 👇 ADDED: CLOUDFLARE NATIVE PLAYER LOGIC 👇
     async playMainContent(embedUrl) {
         this.adContainer.style.display = 'none'; 
         this.iframeContainer.style.display = 'block';
@@ -685,8 +762,8 @@
         const nativePlayer = document.getElementById('nativePlayer');
         const iframePlayer = document.getElementById('iframePlayer');
 
-        // Check for direct link
-        if (embedUrl.match(/\.(mp4|m3u8)$/i) || embedUrl.includes('.mp4?')) {
+        // Check for direct link (like offline Blob URL or standard MP4)
+        if (embedUrl.match(/\.(mp4|m3u8)$/i) || embedUrl.includes('.mp4?') || embedUrl.startsWith('blob:')) {
             this.startNativePlayer(embedUrl, nativePlayer, iframePlayer);
             return;
         }
@@ -774,4 +851,3 @@
 
 </body>
 </html>
-
