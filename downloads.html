@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Downloads - Offline</title>
+    <style>
+        /* Premium Dark Theme UI */
+        body { background: #0f0f0f; color: #fff; font-family: 'Arial', sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { color: white; text-decoration: none; font-size: 18px; background: #333; padding: 8px 15px; border-radius: 5px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .card { background: #1a1a1a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card-body { padding: 10px; text-align: center; }
+        .card-body h3 { font-size: 14px; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .btn-group { display: flex; gap: 5px; }
+        .btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-play { background: #E63946; color: white; }
+        .btn-del { background: #444; color: white; }
+        .empty-msg { text-align: center; color: #888; margin-top: 50px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>📥 My Downloads</h2>
+        <a href="index.html" class="back-btn">⬅ Back to Home</a>
+    </div>
+
+    <!-- Yahan saari downloaded movies dikhengi -->
+    <div id="downloadsGrid" class="grid"></div>
+
+    <script>
+        // 1. LocalStorage se downloaded movies nikalo
+        function loadDownloads() {
+            const downloadsGrid = document.getElementById('downloadsGrid');
+            const offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
+
+            if (offlineMovies.length === 0) {
+                downloadsGrid.innerHTML = "<div class='empty-msg'>Koi video download nahi ki gayi hai. 😢</div>";
+                return;
+            }
+
+            downloadsGrid.innerHTML = '';
+            
+            // Har movie ke liye ek card banao
+            offlineMovies.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <!-- Thumbnail placeholder -->
+                    <img src="100.png" alt="${movie.title}"> 
+                    <div class="card-body">
+                        <h3>${movie.title}</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-play" onclick="playOffline('${movie.url}')">▶ Play</button>
+                            <button class="btn btn-del" onclick="deleteDownload('${movie.id}', '${movie.url}')">🗑️ Delete</button>
+                        </div>
+                    </div>
+                `;
+                downloadsGrid.appendChild(card);
+            });
+        }
+
+        // 2. Play Button Logic (Video ko Cache se nikalkar chalana)
+        async function playOffline(videoUrl) {
+            // Yahan hum index.html par waapas bhej rahe hain offline URL ke sath
+            // Taaki user ko wahi premium player mile jo humne banaya hai
+            window.location.href = `index.html?offline_play=${encodeURIComponent(videoUrl)}`;
+        }
+
+        // 3. Delete Logic (Cache aur Storage khali karna)
+        async function deleteDownload(movieId, videoUrl) {
+            if(confirm("Kya aap is video ko delete karna chahte hain?")) {
+                try {
+                    const cache = await caches.open('hotfake-downloads-v1');
+                    await cache.delete(videoUrl); // Cache se hataya
+                    
+                    let offlineMovies = JSON.parse(localStorage.getItem('my_downloads') || '[]');
+                    offlineMovies = offlineMovies.filter(m => m.id !== movieId);
+                    localStorage.setItem('my_downloads', JSON.stringify(offlineMovies)); // DB se hataya
+                    
+                    loadDownloads(); // Screen refresh ki
+                } catch (err) {
+                    console.error("Delete failed", err);
+                }
+            }
+        }
+
+        // Page load hote hi list load karo
+        loadDownloads();
+    </script>
+</body>
+</html>
+
