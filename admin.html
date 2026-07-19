@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -120,6 +120,10 @@
         <label>Main Video Link (Leave blank if adding parts)</label>
         <input class="inp" type="url" id="vlink" placeholder="https://...">
 
+        <!-- HINGLISH: NEW BACKUP DOWNLOAD LINK WALA INPUT ADD KIYA -->
+        <label style="margin-top:0.5rem;">Direct Download Link (Backup for App Offline Download)</label>
+        <input class="inp" type="url" id="vDownloadLink" placeholder="https://drive.google.com/uc?export=download&id=...">
+
         <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
         <h4 style="margin-bottom:1rem;">Episodes / Parts (Image & Video)</h4>
         <div id="partsContainer"></div>
@@ -202,7 +206,6 @@
           <label>Website Favicon URL</label>
           <input class="inp" type="url" id="setFavicon">
           
-          <!-- HINGLISH: Naya Input Box for APK Link -->
           <label style="margin-top:1rem;">App APK Download Link (For Website Users)</label>
           <input class="inp" type="url" id="setApkLink" placeholder="https://link-to-your-app.apk">
           
@@ -233,6 +236,11 @@
         </div>
     </div>
     <label>Main Video URL</label><input class="inp" type="url" id="editLink">
+    
+    <!-- HINGLISH: NEW BACKUP DOWNLOAD LINK WALA INPUT FOR EDIT MODAL -->
+    <label style="margin-top:0.5rem;">Direct Download Link (Backup for App Offline Download)</label>
+    <input class="inp" type="url" id="editDownloadLink">
+
     <hr style="border:0; border-top:1px solid var(--border); margin:1.5rem 0;">
     <h4 style="margin-bottom:1rem;">Edit Episodes / Parts</h4>
     <div id="editPartsContainer"></div>
@@ -412,6 +420,7 @@
       document.getElementById('addPartBtn').addEventListener('click', () => addPartRow('partsContainer'));
       document.getElementById('editAddPartBtn').addEventListener('click', () => addPartRow('editPartsContainer'));
 
+      // HINGLISH: ADD VIDEO WALE SAVE BUTTON MEIN BACKUP LINK ADD KIYA GAYA HAI
       document.getElementById('saveVidBtn').addEventListener('click', () => {
           let parts = [];
           document.querySelectorAll('#partsContainer > div').forEach(row => {
@@ -421,6 +430,7 @@
           const data = {
               title: document.getElementById('vtitle').value, imageUrl: document.getElementById('vimage').value,
               videoUrl: document.getElementById('vlink').value || (parts.length > 0 ? parts[0].url : ''),
+              backupLink: document.getElementById('vDownloadLink').value,
               type: document.getElementById('vtype').value, is18Plus: document.getElementById('v18plus').value,
               parts: parts, addedDate: new Date().toISOString()
           };
@@ -428,7 +438,7 @@
           set(ref(db, 'videos/' + Date.now().toString(36)), data).then(() => {
               alert("Video Added!"); 
               document.getElementById('vtitle').value = ''; document.getElementById('vimage').value = '';
-              document.getElementById('vlink').value = ''; document.getElementById('partsContainer').innerHTML = '';
+              document.getElementById('vlink').value = ''; document.getElementById('vDownloadLink').value = ''; document.getElementById('partsContainer').innerHTML = '';
           });
       });
 
@@ -449,10 +459,12 @@
 
       window.deleteVid = (id) => { if(confirm("Delete video?")) remove(ref(db, 'videos/'+id)); };
 
+      // HINGLISH: EDIT MODAL KHOLE PAR BACKUP LINK BHI LOAD HOGA
       window.openEdit = (id) => {
           const v = allVideosRaw[id];
           document.getElementById('editId').value = id; document.getElementById('editTitle').value = v.title;
           document.getElementById('editImg').value = v.imageUrl; document.getElementById('editLink').value = v.videoUrl;
+          document.getElementById('editDownloadLink').value = v.backupLink || '';
           document.getElementById('editType').value = v.type || 'external'; document.getElementById('edit18plus').value = v.is18Plus || 'false';
           
           const epContainer = document.getElementById('editPartsContainer'); epContainer.innerHTML = '';
@@ -460,6 +472,7 @@
           document.getElementById('editModal').style.display = 'flex';
       };
 
+      // HINGLISH: EDIT VIDEO UPDATE KARNE MEIN BACKUP LINK UPDATE HOGA
       document.getElementById('saveEditBtn').addEventListener('click', () => {
           const id = document.getElementById('editId').value;
           let parts = [];
@@ -470,6 +483,7 @@
           update(ref(db, 'videos/' + id), {
               title: document.getElementById('editTitle').value, imageUrl: document.getElementById('editImg').value,
               videoUrl: document.getElementById('editLink').value || (parts.length > 0 ? parts[0].url : ''),
+              backupLink: document.getElementById('editDownloadLink').value,
               type: document.getElementById('editType').value, is18Plus: document.getElementById('edit18plus').value,
               parts: parts
           }).then(() => { alert("Video Updated!"); document.getElementById('editModal').style.display = 'none'; });
@@ -529,7 +543,6 @@
           banBtn.style.background = u.banned ? "var(--green)" : "var(--red)";
           banBtn.onclick = () => { update(ref(db, 'users/'+id), {banned: !u.banned}); document.getElementById('userModal').style.display='none'; };
 
-          // HINGLISH: Lag fix kiya hai html memory buffer use karke aur latest limit daal kar
           // Action Logs (Lag Fix)
           const actionBox = document.getElementById('umActionsList'); 
           if(u.actions) {
@@ -612,7 +625,6 @@
           }).then(() => alert("Social Links Updated!"));
       });
       
-      // HINGLISH: Settings page pe APK link aur Favicon load aur save karna
       onValue(ref(db, 'settings/general'), snap => { 
           const data = snap.val();
           if(data?.favicon) document.getElementById('setFavicon').value = data.favicon; 
@@ -631,4 +643,3 @@
 </script>
 </body>
 </html>
-
